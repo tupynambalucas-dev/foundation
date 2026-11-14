@@ -1,13 +1,13 @@
-# gh-tl CLI Extension Suite Agent Context
+# Workstation Engineering & Developer Tooling Agent Context
 
-This document defines the root agent bounded context router for `gh-tl`, the enterprise GitHub CLI extension suite for the `tupynambalucas-dev` organization.
+This document defines the root agent bounded context router for `workstation`, the sovereign developer workstation engineering, WSL2 custom distributions, and CLI suite for the `tupynambalucas-dev` organization.
 
 ## Architectural Boundaries
 
-- **Package Namespace**: `github.com/tupynambalucas-dev/gh-tl`
+- **Repository Slug**: `tupynambalucas-dev/workstation`
 - **CLI Framework**: `github.com/spf13/cobra` combined with `github.com/cli/go-gh/v2`
-- **Distribution Model**: Precompiled multi-platform binaries via `cli/gh-extension-precompile@v2` on GitHub Releases.
-- **Root Invocation**: `gh tl <command>`
+- **Distribution Model**: Precompiled multi-platform binaries on GitHub Releases and WSL2 `.wsl` distribution packages.
+- **Root Invocation**: `tl <command>` (standalone) or `gh tl <command>` / `gh workstation <command>` (GitHub CLI integration).
 - **Design Principles**: Domain-Driven Design (DDD) bounded contexts, SOLID principles (SRP, OCP), and Single Source of Truth (SSOT).
 
 ## Subsystem Navigation

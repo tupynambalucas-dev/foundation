@@ -1,12 +1,12 @@
-# gh-tl
+# workstation
 
-Official enterprise GitHub CLI extension suite for the `tupynambalucas-dev` organization, delivering modular engineering tooling, automated onboarding, cryptographic compliance, and multi-repository workflows.
+Sovereign developer workstation engineering, WSL2 custom distributions, and CLI suite for the `tupynambalucas-dev` organization.
 
 ---
 
 ## Overview
 
-`gh-tl` serves as the centralized command-line interface for Tupynambá Lucas engineering teams. Built on top of the GitHub CLI (`gh`) and the official `go-gh` SDK, it provides an extensible, modular command suite designed to eliminate operational friction and enforce organizational governance.
+`workstation` serves as the centralized workstation engineering and developer platform suite for Tupynambá Lucas engineering teams. It encapsulates Distribution-as-Code (DaC) for pre-configured WSL2 enterprise distributions (`.wsl`), developer onboarding, cryptographic compliance, and multi-repository workflows.
 
 ### Architectural Principles
 
