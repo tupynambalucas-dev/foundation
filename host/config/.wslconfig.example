@@ -1,0 +1,17 @@
+# ==============================================================================
+# tupynambalucas-dev | Windows Subsystem for Linux (WSL2) Host Configuration
+# Target Location: %UserProfile%\.wslconfig
+# ==============================================================================
+
+[wsl2]
+memory=16GB
+processors=8
+swap=4GB
+localhostForwarding=true
+nestedVirtualization=true
+
+[experimental]
+autoMemoryReclaim=gradual
+sparseVhd=true
+dnsTunneling=true
+bestEffortDnsParsing=true

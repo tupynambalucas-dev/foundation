@@ -1,0 +1,26 @@
+{
+  "ModernDistributions": {
+    "tupynambalucas-dev": [
+      {
+        "Name": "tupynambalucas-dev-26.04",
+        "FriendlyName": "tupynambalucas-dev (Ubuntu 26.04 LTS Developer Workstation)",
+        "Default": true,
+        "Amd64Url": {
+          "Url": "https://github.com/tupynambalucas-dev/workstation/releases/latest/download/tupynambalucas-dev.wsl",
+          "Sha256": "0xPLACEHOLDER_CALCULATED_BY_CI_AMD64_BASE"
+        }
+      }
+    ],
+    "tupynambalucas-dev-cluster": [
+      {
+        "Name": "tupynambalucas-dev-cluster-26.04",
+        "FriendlyName": "tupynambalucas-dev-cluster (Ubuntu 26.04 LTS Kubernetes Engine k3d)",
+        "Default": true,
+        "Amd64Url": {
+          "Url": "https://github.com/tupynambalucas-dev/workstation/releases/latest/download/tupynambalucas-dev-cluster.wsl",
+          "Sha256": "0xPLACEHOLDER_CALCULATED_BY_CI_AMD64_CLUSTER"
+        }
+      }
+    ]
+  }
+}

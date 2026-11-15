@@ -4,6 +4,16 @@
 *.dll
 *.so
 *.dylib
+tl
+gh-tl
+gh-workstation
+
+# Build & WSL Distribution Output Artifacts
+dist/
+output/
+*.wsl
+*.tar
+*.tar.gz
 
 # Test binary
 *.test
@@ -18,9 +28,11 @@ go.work
 .DS_Store
 Thumbs.db
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 *.swp
 *.swo
+
 # Agent Plans Container (Ignored by Git, preserved for local @ attachment via .ignore / .rgignore)
 .agents/plans/
 plans/

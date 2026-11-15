@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -10,7 +11,8 @@ permissions:
   attestations: write
 
 jobs:
-  release:
+  release-cli:
+    name: Precompile & Publish GitHub CLI Extension
     runs-on: ubuntu-latest
     steps:
       - name: Generate CI Bot Token
@@ -25,11 +27,64 @@ jobs:
           private-key: ${{ env.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: cli/gh-extension-precompile@v2
+      - name: Precompile CLI Extension Binaries
+        uses: cli/gh-extension-precompile@v2
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
         with:
           generate_attestations: true
           go_version_file: go.mod
+          go_build_options: "./cli/cmd/tl"
+
+  release-distros:
+    name: Build & Publish WSL2 Custom Distributions (.wsl)
+    needs: release-cli
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Build Base Distribution Image (tupynambalucas-dev)
+        run: |
+          mkdir -p output
+          docker buildx build -f distros/base/Dockerfile -t tupynambalucas-dev-base:latest --load .
+          docker buildx build -f distros/base/Dockerfile --target rootfs --output type=tar,dest=output/tupynambalucas-dev.tar .
+          gzip -9 -f output/tupynambalucas-dev.tar
+          mv output/tupynambalucas-dev.tar.gz output/tupynambalucas-dev.wsl
+
+      - name: Build Cluster Distribution Image (tupynambalucas-dev-cluster)
+        run: |
+          docker buildx build -f distros/cluster/Dockerfile \
+            --build-arg BASE_IMAGE=tupynambalucas-dev-base:latest \
+            --target rootfs \
+            --output type=tar,dest=output/tupynambalucas-dev-cluster.tar .
+          gzip -9 -f output/tupynambalucas-dev-cluster.tar
+          mv output/tupynambalucas-dev-cluster.tar.gz output/tupynambalucas-dev-cluster.wsl
+
+      - name: Compute SHA-256 Hashes & Stamp DistributionInfo.json
+        run: |
+          BASE_SHA="0x$(sha256sum output/tupynambalucas-dev.wsl | awk '{print $1}')"
+          CLUSTER_SHA="0x$(sha256sum output/tupynambalucas-dev-cluster.wsl | awk '{print $1}')"
+          jq --arg base_sha "$BASE_SHA" --arg cluster_sha "$CLUSTER_SHA" \
+            '.ModernDistributions["tupynambalucas-dev"][0].Amd64Url.Sha256 = $base_sha |
+             .ModernDistributions["tupynambalucas-dev-cluster"][0].Amd64Url.Sha256 = $cluster_sha' \
+            distros/catalog/DistributionInfo.json > output/DistributionInfo.json
+          cp host/registry/tupynambalucas-dev.reg output/tupynambalucas-dev.reg
+
+      - name: Upload WSL2 Distribution Assets to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" \
+            output/tupynambalucas-dev.wsl \
+            output/tupynambalucas-dev-cluster.wsl \
+            output/DistributionInfo.json \
+            output/tupynambalucas-dev.reg \
+            --clobber

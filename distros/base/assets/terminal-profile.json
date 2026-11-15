@@ -1,0 +1,35 @@
+{
+  "profiles": [
+    {
+      "tabTitle": "tupynambalucas.dev",
+      "colorScheme": "Vintage",
+      "background": "#000000",
+      "foreground": "#FFFFFF",
+      "backgroundImage": "monygang.png",
+      "backgroundImageOpacity": 0.35,
+      "backgroundImageStretchMode": "fill",
+      "adjustIndistinguishableColors": "automatic",
+      "antialiasingMode": "cleartype",
+      "cursorColor": "#00E5FF",
+      "cursorHeight": 23,
+      "cursorShape": "vintage",
+      "elevate": false,
+      "experimental.rainbowSuggestions": true,
+      "experimental.retroTerminalEffect": false,
+      "font": {
+        "axes": {},
+        "colorGlyphs": true,
+        "face": "Ubuntu Mono",
+        "features": {},
+        "size": 12,
+        "weight": "medium"
+      },
+      "intenseTextStyle": "all",
+      "opacity": 100,
+      "padding": "8",
+      "scrollbarState": "hidden",
+      "selectionBackground": "#3B4261",
+      "useAcrylic": false
+    }
+  ]
+}

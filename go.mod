@@ -1,4 +1,4 @@
-module github.com/tupynambalucas-dev/gh-tl
+module github.com/tupynambalucas-dev/workstation
 
 go 1.27.3
 

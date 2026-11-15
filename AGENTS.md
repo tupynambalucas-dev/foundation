@@ -1,47 +1,49 @@
-# Workstation Engineering & Developer Tooling Agent Context
+# Workstation Bounded-Context Monorepo Agent Context Router
 
-This document defines the root agent bounded context router for `workstation`, the sovereign developer workstation engineering, WSL2 custom distributions, and CLI suite for the `tupynambalucas-dev` organization.
+This document serves as the Layer-1 root context router for AI agents operating inside `tupynambalucas-dev/workstation`, the sovereign developer workstation monorepo hosting WSL2 custom distributions (`distros/`), the developer CLI & GitHub CLI extension suite (`cli/`), and Windows host virtualization governance (`host/`).
 
-## Architectural Boundaries
+ When operating within the `org-core` umbrella workspace, also inherit root organizational policies from [`../AGENTS.md`](../AGENTS.md).
+
+## Architectural Boundaries & Core Principles
 
 - **Repository Slug**: `tupynambalucas-dev/workstation`
-- **CLI Framework**: `github.com/spf13/cobra` combined with `github.com/cli/go-gh/v2`
-- **Distribution Model**: Precompiled multi-platform binaries on GitHub Releases and WSL2 `.wsl` distribution packages.
-- **Root Invocation**: `tl <command>` (standalone) or `gh tl <command>` / `gh workstation <command>` (GitHub CLI integration).
-- **Design Principles**: Domain-Driven Design (DDD) bounded contexts, SOLID principles (SRP, OCP), and Single Source of Truth (SSOT).
+- **Go Module Identity (SSOT)**: `github.com/tupynambalucas-dev/workstation` (rooted at [`./go.mod`](./go.mod) via Inherited Configuration, with CLI entrypoint at `./cli/cmd/tl`).
+- **Root CLI Invocations**: `tl <command>` (standalone), `gh tl <command>`, or `gh workstation <command>` (GitHub CLI precompiled extension).
+- **Engineering Principles**:
+  1. **DDD & Feature-Sliced Design (FSD)**: Strict Layer-2 separation across `distros/`, `cli/`, and `host/`. Within `cli/`, dependencies flow unidirectionally downward (`cli/cmd -> cli/domains/* -> cli/internal/*`).
+  2. **SOLID Principles**: Narrow role-segregated interfaces in `cli/internal/contracts/` (`GitConfigReader` vs. `GitConfigMutator`, `WSLDistroInspector` vs. `WSLDistroOperator`), dependency injection for deterministic testing, and open/closed extensibility.
+  3. **Single Source of Truth (SSOT)**: Authoritative WSL catalog in `distros/catalog/DistributionInfo.json` and centralized organizational constants in `cli/internal/config/config.go`.
+  4. **Inherited Configuration**: `distros/cluster/Dockerfile` extends `tupynambalucas-dev-base:latest`; child `AGENTS.md` routers inherit from parent layers via `<context-hierarchy>`.
 
-## Subsystem Navigation
+## Bounded Context Navigation (Layer 2 & Layer 3)
 
-- [README.md](./README.md): Primary suite documentation, installation, and command catalog.
-- [cmd/](./cmd/AGENTS.md): Command layer and Cobra subcommand definitions.
-  - [cmd/onboard/](./cmd/onboard/AGENTS.md): Onboarding and pre-flight readiness gate domain.
-- [internal/](./internal/AGENTS.md): Shared, domain-agnostic internal modules (`config`, `git`, `github`, `ssh`, `ui`).
+| Layer | Bounded Context | Context Router | Documentation | Responsibility |
+| :-: | :--- | :--- | :--- | :--- |
+| **1** | **Monorepo Root (`.` )** | [`AGENTS.md`](./AGENTS.md) | [`README.md`](./README.md) | Monorepo governance, Go module anchor, CI/CD pipelines, and cross-domain routing. |
+| **2** | **WSL2 Distributions (`distros/`)** | [`distros/AGENTS.md`](./distros/AGENTS.md) | [`distros/README.md`](./distros/README.md) | Distribution-as-Code (`.wsl`) on Ubuntu 26.04 LTS, catalog manifest, and shared OOBE/systemd scripts. |
+| **3** | **Base Workstation (`distros/base/`)** | [`distros/base/AGENTS.md`](./distros/base/AGENTS.md) | [`distros/base/README.md`](./distros/base/README.md) | `tupynambalucas-dev`: daily polyglot engineering rootfs with socket-activated Docker and `Dev`/`Admin` terminal profile. |
+| **3** | **Cluster Engine (`distros/cluster/`)** | [`distros/cluster/AGENTS.md`](./distros/cluster/AGENTS.md) | [`distros/cluster/README.md`](./distros/cluster/README.md) | `tupynambalucas-dev-cluster`: dedicated `k3d` Kubernetes engine with kernel `sysctl` tuning and `Admin` terminal profile. |
+| **2** | **Developer CLI Suite (`cli/`)** | [`cli/AGENTS.md`](./cli/AGENTS.md) | [`cli/README.md`](./cli/README.md) | Cobra CLI & GitHub CLI extension (`tl` / `gh tl`) and shared `cli/internal/*` adapters. |
+| **3** | **Onboarding Domain (`cli/domains/onboard/`)** | [`cli/domains/onboard/AGENTS.md`](./cli/domains/onboard/AGENTS.md) | [`cli/domains/onboard/README.md`](./cli/domains/onboard/README.md) | `tl onboard` and `tl verify`: Ed25519 SSH key provisioning, conditional Git `includeIf`, and 7 readiness gates. |
+| **3** | **Distro Lifecycle Domain (`cli/domains/distro/`)** | [`cli/domains/distro/AGENTS.md`](./cli/domains/distro/AGENTS.md) | [`cli/domains/distro/README.md`](./cli/domains/distro/README.md) | `tl distro list|status|install`: WSL2 catalog discovery, SHA-256 verification, and native `wsl.exe` installation. |
+| **2** | **Windows Host Governance (`host/`)** | [`host/AGENTS.md`](./host/AGENTS.md) | [`host/README.md`](./host/README.md) | Zero-script `.reg` catalog registration, `%UserProfile%\.wslconfig` template, and Day-0 `install.ps1` readiness script. |
 
 ## Governance Standards
 
-- All commits and release tags MUST be cryptographically signed with SSH.
-- Conventional Commits standard (`feat`, `fix`, `docs`, `chore`, etc.).
-- Strictly zero emojis across all code, comments, terminal output, PRs, and documentation.
-- All technical documentation, comments, and CLI strings MUST be written in en-US.
-- The AGENTS-README co-existence invariant is strictly enforced: every package containing an `AGENTS.md` must also contain a corresponding `README.md`.
+- **3-Layer Bounded Context Ceiling**: `AGENTS.md` and `README.md` files are strictly capped at Layer 3. Intermediate grouping folders (`cli/domains/`, `cli/cmd/`, `cli/internal/*`, `distros/catalog/`, `distros/shared/`, `host/*`) and planning containers (`plans/`) MUST NOT declare child `AGENTS.md` or `README.md` files.
+- **Cryptographic Signatures**: All Git commits and release tags MUST be signed with SSH (`git commit -S -m "..."`).
+- **Conventional Commits**: All commit messages must follow `<type>[optional (<scope>)][!]: <description>` (`<= 72` chars target).
+- **Zero-Emoji Invariant**: Emojis are strictly forbidden across all code, terminal UI output, configuration files, PRs, and documentation.
+- **Technical Language Policy**: All documentation, code comments, and CLI output MUST be authored strictly in `en-US`.
 
 ## Architectural Plans & Artifact Dual-Storage Standard
 
-Architectural blueprints, technical analyses, and master plans follow strict enterprise storage standards:
-- **Storage Location**: Blueprints, analyses, and reports reside in `plans/<artifact-slug>/` (or `plans/<artifact-slug>.md`), with `.agents/plans/<artifact-slug>/` fully recognized for backward compatibility.
-- **Topologies**: Topology 1 (Single-File Artifact) for atomic refactors, analyses, and reports; Topology 2 (Multi-Artifact Suite) for multi-domain frameworks with master `README.md` and numbered domain documents.
-- **Dual-Storage Invariant**: Whenever an agent creates an architectural plan, analysis, or report artifact in the Antigravity conversation directory (`<appDataDir>/brain/<conversation-id>/`), an identical synchronized copy MUST ALWAYS be mirrored in `plans/<artifact-slug>/` (or `plans/<artifact-slug>.md`).
-- **Ignore & Index Triad**: All repositories ignore `plans/` and `.agents/plans/` in `.gitignore`, while explicitly un-ignoring them in `.ignore` and `.rgignore` (`!plans/`, `!plans/**`, `!.agents/plans/`, `!.agents/plans/**`) and setting `"search.useIgnoreFiles": false` in `.vscode/settings.json` so files can always be attached with `@`.
+- **Storage Location**: Blueprints, analyses, and reports reside in `plans/<artifact-slug>/` (or `plans/<artifact-slug>.md`), with `.agents/plans/<artifact-slug>/` recognized for backward compatibility.
+- **Dual-Storage Invariant**: Whenever an agent creates or updates an architectural plan, analysis, or report in `<appDataDir>/brain/<conversation-id>/`, an identical synchronized copy MUST ALWAYS be mirrored in `plans/<artifact-slug>/` (or `plans/<artifact-slug>.md`).
+- **Ignore & Index Triad**: `plans/` and `.agents/plans/` are ignored in [`.gitignore`](./.gitignore), un-ignored in [`.ignore`](./.ignore) and [`.rgignore`](./.rgignore), and indexed in [`.vscode/settings.json`](./.vscode/settings.json) (`"search.useIgnoreFiles": false`).
 
 ## Required Skills
 
-When authoring or modifying code, commands, or documentation in this extension suite, agents MUST autonomously activate:
-
-- **Atelier Plugin (`@tupynambalucas-dev/plugin-atelier`)**:
-  - **`plan-architect`**: Designing, structuring, authoring, and auditing architectural plans, technical analyses, and governance reports following the dual-storage standard.
-  - **`router-architect`**: Authoring, auditing, or updating hierarchical `AGENTS.md` context routers.
-- **Repository Governance Plugin (`@tupynambalucas-dev/plugin-repo`)**:
-  - **`readme-architect`**: Authoring or auditing `README.md` files and maintaining recursive navigation.
-  - **`community-health-architect`**: Auditing and aligning community governance and health files.
-- **GitHub Flow Plugin (`@tupynambalucas-dev/plugin-github-flow`)**:
-  - **`github-flow-operator`**: Executing Git branching, SSH-signed Conventional Commits, and PR lifecycle workflows.
+- **Atelier Plugin (`@tupynambalucas-dev/plugin-atelier`)**: `plan-architect`, `router-architect`, `skill-architect`, `rule-architect`.
+- **Repository Governance Plugin (`@tupynambalucas-dev/plugin-repo`)**: `readme-architect`, `monorepo-architect`, `community-health-architect`, `license-architect`, `github-standards-architect`.
+- **GitHub Flow Plugin (`@tupynambalucas-dev/plugin-github-flow`)**: `github-flow-operator`, `github-actions-operator`.
