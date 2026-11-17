@@ -30,7 +30,7 @@ This document serves as the Layer-1 root context router for AI agents operating 
 
 ## Governance Standards
 
-- **3-Layer Bounded Context Ceiling**: `AGENTS.md` and `README.md` files are strictly capped at Layer 3. Intermediate grouping folders (`cli/domains/`, `cli/cmd/`, `cli/internal/*`, `distros/catalog/`, `distros/shared/`, `host/*`) and planning containers (`plans/`) MUST NOT declare child `AGENTS.md` or `README.md` files.
+- **3-Layer Bounded Context Ceiling**: `AGENTS.md` and `README.md` files are strictly capped at Layer 3. Intermediate grouping folders (`cli/domains/`, `cli/cmd/`, `cli/internal/*`, `distros/catalog/`, `distros/shared/`, `host/*`) and planning containers (`.agents/plans/`) MUST NOT declare child `AGENTS.md` or `README.md` files.
 - **Cryptographic Signatures**: All Git commits and release tags MUST be signed with SSH (`git commit -S -m "..."`).
 - **Conventional Commits**: All commit messages must follow `<type>[optional (<scope>)][!]: <description>` (`<= 72` chars target).
 - **Zero-Emoji Invariant**: Emojis are strictly forbidden across all code, terminal UI output, configuration files, PRs, and documentation.
@@ -38,9 +38,9 @@ This document serves as the Layer-1 root context router for AI agents operating 
 
 ## Architectural Plans & Artifact Dual-Storage Standard
 
-- **Storage Location**: Blueprints, analyses, and reports reside in `plans/<artifact-slug>/` (or `plans/<artifact-slug>.md`), with `.agents/plans/<artifact-slug>/` recognized for backward compatibility.
-- **Dual-Storage Invariant**: Whenever an agent creates or updates an architectural plan, analysis, or report in `<appDataDir>/brain/<conversation-id>/`, an identical synchronized copy MUST ALWAYS be mirrored in `plans/<artifact-slug>/` (or `plans/<artifact-slug>.md`).
-- **Ignore & Index Triad**: `plans/` and `.agents/plans/` are ignored in [`.gitignore`](./.gitignore), un-ignored in [`.ignore`](./.ignore) and [`.rgignore`](./.rgignore), and indexed in [`.vscode/settings.json`](./.vscode/settings.json) (`"search.useIgnoreFiles": false`).
+- **Storage Location**: Blueprints, analyses, and reports reside in `<target-repo>/.agents/plans/<artifact-slug>/` (or `<target-repo>/.agents/plans/<artifact-slug>.md`) within the respective repository for which the artifact is created. Creating a `plans/` directory at the root of any repository is strictly prohibited.
+- **Dual-Storage Invariant**: Whenever an agent creates or updates an architectural plan, analysis, or report in `<appDataDir>/brain/<conversation-id>/`, an identical synchronized copy MUST ALWAYS be mirrored in `<target-repo>/.agents/plans/<artifact-slug>/` (or `<target-repo>/.agents/plans/<artifact-slug>.md`).
+- **Ignore & Index Triad**: `.agents/plans/` is ignored in [`.gitignore`](./.gitignore), un-ignored in [`.ignore`](./.ignore) and [`.rgignore`](./.rgignore), and indexed in [`.vscode/settings.json`](./.vscode/settings.json) (`"search.useIgnoreFiles": false`).
 
 ## Required Skills
 
