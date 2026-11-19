@@ -43,4 +43,5 @@ Layer-3 WSL2 Distribution-as-Code package extending [`tupynambalucas-dev`](../ba
 
 - [WSL2 Distributions Subsystem (`../README.md`)](../README.md)
 - [Base Developer Distribution (`../base/README.md`)](../base/README.md)
+- [Documentation Hub (`../../references/README.md`)](../../references/README.md)
 - [Workstation Monorepo Root (`../../README.md`)](../../README.md)

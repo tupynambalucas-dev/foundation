@@ -29,6 +29,7 @@ When operating within the `org-core` umbrella workspace, also inherit root organ
 | **3** | **GitHub Extensions (`tools/github/`)** | [`tools/github/AGENTS.md`](./tools/github/AGENTS.md) | [`tools/github/README.md`](./tools/github/README.md) | GitHub CLI ecosystem and extension modules (`extensions/gh-tl/`). |
 | **3** | **gh-tl Extension (`tools/github/extensions/gh-tl/`)** | [`tools/github/extensions/gh-tl/AGENTS.md`](./tools/github/extensions/gh-tl/AGENTS.md) | [`tools/github/extensions/gh-tl/README.md`](./tools/github/extensions/gh-tl/README.md) | Multi-platform Go CLI (`gh tl` / `tl`): cryptographic onboarding, host readiness, and WSL distribution lifecycle. |
 | **2** | **Windows Virtualization (`virtualization/`)** | [`virtualization/AGENTS.md`](./virtualization/AGENTS.md) | [`virtualization/README.md`](./virtualization/README.md) | Zero-script `.reg` catalog registration, `%UserProfile%\.wslconfig` template, and hypervisor memory bounds. |
+| **2** | **Documentation Hub (`references/`)** | [`references/AGENTS.md`](./references/AGENTS.md) | [`references/README.md`](./references/README.md) | Diataxis-structured technical documentation hub (tutorials, how-to-guides, technical reference, architecture explanation). |
 
 ## Governance Standards
 

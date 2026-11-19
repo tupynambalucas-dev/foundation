@@ -3,9 +3,9 @@
   <parent-context path="../AGENTS.md" description="Layer 2: WSL2 Distribution-as-Code Subsystem Agent Context" />
 </context-hierarchy>
 
-# Cluster Kubernetes Engine Distribution Agent Context (`distros/cluster/`)
+# Cluster Kubernetes Engine Distribution Agent Context (`distributions/cluster/`)
 
-This document serves as the Layer-3 bounded context router for `workstation/distros/cluster/`, governing the `tupynambalucas-dev-cluster` Ubuntu 26.04 LTS distribution dedicated to running local `k3d` Kubernetes topologies (`k3d-hub` and `k3d-corporate`).
+This document serves as the Layer-3 bounded context router for `workstation/distributions/cluster/`, governing the `tupynambalucas-dev-cluster` Ubuntu 26.04 LTS distribution dedicated to running local `k3d` Kubernetes topologies (`k3d-hub` and `k3d-corporate`).
 
 ## Package Assets
 
@@ -18,5 +18,5 @@ This document serves as the Layer-3 bounded context router for `workstation/dist
 
 ## Package Guardrails
 
-1. **Always-On Container Daemons**: Unlike `distros/base`, `distros/cluster/Dockerfile` explicitly enables `docker.service` and `containerd.service` so `k3d` nodes and local registries recover automatically on distribution boot.
+1. **Always-On Container Daemons**: Unlike `distributions/base`, `distributions/cluster/Dockerfile` explicitly enables `docker.service` and `containerd.service` so `k3d` nodes and local registries recover automatically on distribution boot.
 2. **Kernel Tuning Preservation**: Never lower the `inotify` or `vm.max_map_count` values in `etc/sysctl.d/99-kubernetes.conf`; they are required for `k3d-hub` (ArgoCD, Infisical, Harbor) and `k3d-corporate` pods to run simultaneously without `Too many open files` errors.

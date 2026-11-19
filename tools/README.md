@@ -39,3 +39,4 @@ pnpm --filter @tupynambalucas-dev/workstation-gh-tl build
 - [GitHub Extensions Workspace (`./github/README.md`)](./github/README.md)
 - [WSL2 Distributions Subsystem (`../distributions/README.md`)](../distributions/README.md)
 - [Host Virtualization Governance (`../virtualization/README.md`)](../virtualization/README.md)
+- [Documentation Hub (`../references/README.md`)](../references/README.md)

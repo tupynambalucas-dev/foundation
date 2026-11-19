@@ -3,9 +3,9 @@
   <parent-context path="../AGENTS.md" description="Layer 2: WSL2 Distribution-as-Code Subsystem Agent Context" />
 </context-hierarchy>
 
-# Base Developer Workstation Distribution Agent Context (`distros/base/`)
+# Base Developer Workstation Distribution Agent Context (`distributions/base/`)
 
-This document serves as the Layer-3 bounded context router for `workstation/distros/base/`, governing the `tupynambalucas-dev` Ubuntu 26.04 LTS daily developer workstation distribution.
+This document serves as the Layer-3 bounded context router for `workstation/distributions/base/`, governing the `tupynambalucas-dev` Ubuntu 26.04 LTS daily developer workstation distribution.
 
 ## Package Assets
 
@@ -18,5 +18,5 @@ This document serves as the Layer-3 bounded context router for `workstation/dist
 
 ## Package Guardrails
 
-1. **Socket-Activated Docker (`docker.socket`)**: In `distros/base/Dockerfile`, `docker.service` MUST remain disabled at boot (`systemctl disable docker.service && systemctl enable docker.socket`) so daily coding sessions consume zero idle container daemon memory until a `docker` CLI command is invoked.
-2. **Base Image Inheritance Contract**: `distros/cluster/Dockerfile` extends `tupynambalucas-dev-base:latest`. Any core OS package or shared asset removed from `distros/base/Dockerfile` impacts `distros/cluster` downstream.
+1. **Socket-Activated Docker (`docker.socket`)**: In `distributions/base/Dockerfile`, `docker.service` MUST remain disabled at boot (`systemctl disable docker.service && systemctl enable docker.socket`) so daily coding sessions consume zero idle container daemon memory until a `docker` CLI command is invoked.
+2. **Base Image Inheritance Contract**: `distributions/cluster/Dockerfile` extends `tupynambalucas-dev-base:latest`. Any core OS package or shared asset removed from `distributions/base/Dockerfile` impacts `distributions/cluster` downstream.

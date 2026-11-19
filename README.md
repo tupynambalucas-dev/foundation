@@ -36,9 +36,17 @@ flowchart TD
         VirtPkg["package.json & tsconfig.json"]
     end
 
+    subgraph Refs["Layer 2: references/ (Documentation: Diataxis Hub)"]
+        Tutorials["tutorials/ (Getting Started, Distro Builds)"]
+        HowTos["how-to-guides/ (Catalog, K8s, CLI, Hypervisor)"]
+        Reference["reference/ (CLI Spec, Catalog Schema, Package Matrix)"]
+        Explanation["explanation/ (DDD Topology, Catalog Mechanics, OCI)"]
+    end
+
     Root --> Distros
     Root --> Tools
     Root --> Virt
+    Root --> Refs
     Tools --> GHWorkspace
     GHWorkspace --> CLIExt
     ClusterDistro -->|extends| BaseDistro
@@ -76,6 +84,13 @@ workstation/
 │   ├── config/                 # Authoritative .wslconfig.example template
 │   ├── registry/               # tupynambalucas-dev.reg Windows Registry catalog federation
 │   └── scripts/                # Host helper scripts (install.ps1 with deprecation notice)
+├── references/                 # Documentation Subsystem: Diataxis Documentation Hub (Layer 2)
+│   ├── README.md               # Master documentation index and quadrant navigation
+│   ├── AGENTS.md               # Documentation subsystem AI context router
+│   ├── tutorials/              # Learning-oriented guides (Getting Started, Distro Builds)
+│   ├── how-to-guides/          # Problem-oriented runbooks (Catalog, K8s, CLI, Hypervisor)
+│   ├── reference/              # Information-oriented technical specs (CLI Spec, Schemas)
+│   └── explanation/            # Understanding-oriented architecture rationale (DDD, OCI)
 ├── package.json                # Root Monorepo Orchestrator (@tupynambalucas-dev/workstation)
 ├── pnpm-workspace.yaml         # pnpm Workspaces configuration & strict catalogs
 ├── turbo.json                  # Turborepo task pipeline configuration
@@ -102,6 +117,7 @@ Subsystems are classified according to enterprise Domain-Driven Design (DDD) str
 | **3** | Supporting Workspace | **`tools/github/`** | [`tools/github/README.md`](./tools/github/README.md) | [`tools/github/AGENTS.md`](./tools/github/AGENTS.md) | GitHub CLI ecosystem and extension modules. |
 | **3** | Supporting Package | **`tools/github/extensions/gh-tl/`** | [`tools/github/extensions/gh-tl/README.md`](./tools/github/extensions/gh-tl/README.md) | [`tools/github/extensions/gh-tl/AGENTS.md`](./tools/github/extensions/gh-tl/AGENTS.md) | Multi-platform Go CLI (`gh tl` / `tl`): cryptographic onboarding, host readiness, and WSL distribution lifecycle. |
 | **2** | **Generic Domain** | **`virtualization/`** | [`virtualization/README.md`](./virtualization/README.md) | [`virtualization/AGENTS.md`](./virtualization/AGENTS.md) | Windows Registry catalog injection (`tupynambalucas-dev.reg`), `.wslconfig.example` (`sparseVhd=true`), and hypervisor memory bounds. |
+| **2** | **Documentation** | **`references/`** | [`references/README.md`](./references/README.md) | [`references/AGENTS.md`](./references/AGENTS.md) | Diataxis-structured technical documentation hub (tutorials, how-to-guides, technical reference, architecture explanation). |
 
 > [!NOTE]
 > For master technical plans, universal Go host readiness, and domain-driven refactoring blueprints, see the [Modern Distribution & Universal CLI Architecture Suite](./.agents/plans/distro-distribution-and-cli-architecture/README.md).
@@ -170,11 +186,12 @@ pnpm build
 
 ## 6. Governance & Contributing Standards
 
-- **Branching Model**: Single-Branch GitHub Flow on `main`. Feature branches must follow Conventional Commit naming (`feat/<slug>`, `fix/<slug>`, `chore/<slug>`).
+- **Branching Model**: Single-Branch GitHub Flow on `main`. Feature branches must follow Conventional Commit naming (`feat/<slug>`, `fix/<slug>`, `docs/<slug>`, `chore/<slug>`).
 - **Cryptographic Signatures**: All Git commits and annotated tags MUST be signed using SSH: `git commit -S -m "..."`.
 - **Conventional Commits**: Commit messages must adhere strictly to Conventional Commits v1.0.0 (`<type>(<scope>): <description>`).
 - **Zero-Emoji Policy**: Emojis are strictly forbidden across code, commits, PRs, and documentation.
 - **Language Standard**: Code, documentation, and configuration must be written strictly in `en-US`.
+- **Agent Context Router**: AI agents operating in this repository MUST inspect and comply with [`AGENTS.md`](./AGENTS.md).
 
 ---
 
@@ -182,6 +199,6 @@ pnpm build
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at:
 
-[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+[Apache License 2.0](./LICENSE)
 
 Copyright (c) 2026 tupynambalucas.dev.
