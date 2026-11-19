@@ -1,0 +1,15 @@
+{
+  "name": "@tupynambalucas-dev/workstation-virtualization",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Windows 11 host virtualization, hypervisor governance, and registry federation.",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
