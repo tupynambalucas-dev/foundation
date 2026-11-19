@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tools" },
+    { "path": "./distributions" },
+    { "path": "./virtualization" }
+  ]
+}

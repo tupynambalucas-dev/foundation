@@ -7,22 +7,27 @@
 tl
 gh-tl
 gh-workstation
+bin/
 
 # Build & WSL Distribution Output Artifacts
 dist/
+build/
 output/
 *.wsl
 *.tar
 *.tar.gz
 
-# Test binary
+# Test binary & coverage
 *.test
-
-# Go coverage output
 *.out
 
 # Go workspace
 go.work
+
+# Node & Turbo
+node_modules/
+.turbo/
+*.tsbuildinfo
 
 # OS and Editor files
 .DS_Store

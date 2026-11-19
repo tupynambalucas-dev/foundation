@@ -9,5 +9,13 @@
   },
   "files.exclude": {
     "**/.git": false
+  },
+  "gopls": {
+    "ui.navigation.importShortcut": "Both",
+    "directoryFilters": [
+      "-node_modules",
+      "-dist",
+      "+tools/github/extensions/gh-tl"
+    ]
   }
 }

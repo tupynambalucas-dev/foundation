@@ -1,0 +1,15 @@
+{
+  "name": "@tupynambalucas-dev/workstation-distributions",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WSL2 developer distributions and Microsoft ModernDistributions catalog manifests.",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
