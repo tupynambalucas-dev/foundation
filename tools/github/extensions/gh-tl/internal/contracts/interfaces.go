@@ -45,6 +45,7 @@ type WSLDistroInspector interface {
 	ListInstalledDistros() ([]InstalledDistro, error)
 	FetchCatalogManifest(source string) (*DistributionManifest, error)
 	VerifyFileSHA256(filePath, expectedHexHash string) (bool, error)
+	GetCatalogURL() (string, error)
 }
 
 // WSLDistroOperator extends inspection with installation actions (used by 'tl distro install').
@@ -52,4 +53,21 @@ type WSLDistroOperator interface {
 	WSLDistroInspector
 	InstallFromCatalog(distroName string) error
 	InstallFromFile(wslFilePath, distroName string) error
+	SetCatalogURL(url string) error
+	IsAdmin() bool
+}
+
+// HostRegistryOperator defines methods for reading and configuring host registry catalog federation.
+type HostRegistryOperator interface {
+	GetCatalogURL() (string, error)
+	SetCatalogURL(url string) error
+	IsAdmin() bool
+}
+
+// HostManager defines host governance operations (.wslconfig, terminal fragments, readiness).
+type HostManager interface {
+	HostRegistryOperator
+	DeployWSLConfig(templateContent string, backupExisting bool) (string, error)
+	StageTerminalAsset(sourceBytes []byte, fileName string) error
+	CheckWSLReadiness() (bool, string, error)
 }

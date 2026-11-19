@@ -42,6 +42,18 @@ func (m *mockWSLOperator) InstallFromFile(wslFilePath, distroName string) error 
 	return nil
 }
 
+func (m *mockWSLOperator) GetCatalogURL() (string, error) {
+	return "https://github.com/tupynambalucas-dev/workstation/releases/latest/download/DistributionInfo.json", nil
+}
+
+func (m *mockWSLOperator) SetCatalogURL(url string) error {
+	return nil
+}
+
+func (m *mockWSLOperator) IsAdmin() bool {
+	return true
+}
+
 func TestDistroListCommand(t *testing.T) {
 	mock := &mockWSLOperator{
 		manifest: &contracts.DistributionManifest{

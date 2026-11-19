@@ -41,7 +41,7 @@ func resolveCatalogSource(explicitSource string) string {
 	if explicitSource != "" {
 		return explicitSource
 	}
-	localCandidate := filepath.Join("distros", "catalog", "DistributionInfo.json")
+	localCandidate := filepath.Join("distributions", "catalog", "DistributionInfo.json")
 	if info, err := os.Stat(localCandidate); err == nil && !info.IsDir() {
 		return localCandidate
 	}
@@ -182,6 +182,17 @@ func newInstallCmd(operator contracts.WSLDistroOperator) *cobra.Command {
 				}
 				ui.PrintInfo(fmt.Sprintf("Installing %s from archive %s...", distroName, flagFromFile))
 				return operator.InstallFromFile(flagFromFile, distroName)
+			}
+
+			// Auto-enroll catalog manifest into Windows Registry if missing or outdated
+			currentURL, _ := operator.GetCatalogURL()
+			if !strings.EqualFold(currentURL, config.DefaultCatalogURL) {
+				ui.PrintInfo(fmt.Sprintf("Auto-enrolling catalog manifest into Windows Registry: %s", config.DefaultCatalogURL))
+				if err := operator.SetCatalogURL(config.DefaultCatalogURL); err != nil {
+					ui.PrintWarn(fmt.Sprintf("Could not auto-enroll catalog URL in registry (Administrator elevation required): %v", err))
+				} else {
+					ui.PrintPass("Catalog URL registered in Windows Registry (DistributionListUrlAppend)")
+				}
 			}
 
 			ui.PrintInfo(fmt.Sprintf("Installing %s from registered WSL catalog...", distroName))
