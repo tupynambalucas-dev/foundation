@@ -36,8 +36,8 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
         with:
           generate_attestations: true
-          go_version_file: go.mod
-          go_build_options: "./cli/cmd/tl"
+          go_version_file: tools/github/extensions/gh-tl/go.mod
+          go_build_options: "./cmd/tl"
 
   release-distros:
     name: Build & Publish WSL2 Custom Distributions (.wsl)
@@ -53,14 +53,14 @@ jobs:
       - name: Build Base Distribution Image (tupynambalucas-dev)
         run: |
           mkdir -p output
-          docker buildx build -f distros/base/Dockerfile -t tupynambalucas-dev-base:latest --load .
-          docker buildx build -f distros/base/Dockerfile --target rootfs --output type=tar,dest=output/tupynambalucas-dev.tar .
+          docker buildx build -f distributions/base/Dockerfile -t tupynambalucas-dev-base:latest --load .
+          docker buildx build -f distributions/base/Dockerfile --target rootfs --output type=tar,dest=output/tupynambalucas-dev.tar .
           gzip -9 -f output/tupynambalucas-dev.tar
           mv output/tupynambalucas-dev.tar.gz output/tupynambalucas-dev.wsl
 
       - name: Build Cluster Distribution Image (tupynambalucas-dev-cluster)
         run: |
-          docker buildx build -f distros/cluster/Dockerfile \
+          docker buildx build -f distributions/cluster/Dockerfile \
             --build-arg BASE_IMAGE=tupynambalucas-dev-base:latest \
             --target rootfs \
             --output type=tar,dest=output/tupynambalucas-dev-cluster.tar .
@@ -74,8 +74,8 @@ jobs:
           jq --arg base_sha "$BASE_SHA" --arg cluster_sha "$CLUSTER_SHA" \
             '.ModernDistributions["tupynambalucas-dev"][0].Amd64Url.Sha256 = $base_sha |
              .ModernDistributions["tupynambalucas-dev-cluster"][0].Amd64Url.Sha256 = $cluster_sha' \
-            distros/catalog/DistributionInfo.json > output/DistributionInfo.json
-          cp host/registry/tupynambalucas-dev.reg output/tupynambalucas-dev.reg
+            distributions/catalog/DistributionInfo.json > output/DistributionInfo.json
+          cp virtualization/registry/tupynambalucas-dev.reg output/tupynambalucas-dev.reg
 
       - name: Upload WSL2 Distribution Assets to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
