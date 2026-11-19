@@ -41,6 +41,8 @@ This document serves as the Layer-1 root context router for AI agents operating 
 - **Storage Location**: Blueprints, analyses, and reports reside in `<target-repo>/.agents/plans/<artifact-slug>/` (or `<target-repo>/.agents/plans/<artifact-slug>.md`) within the respective repository for which the artifact is created. Creating a `plans/` directory at the root of any repository is strictly prohibited.
 - **Dual-Storage Invariant**: Whenever an agent creates or updates an architectural plan, analysis, or report in `<appDataDir>/brain/<conversation-id>/`, an identical synchronized copy MUST ALWAYS be mirrored in `<target-repo>/.agents/plans/<artifact-slug>/` (or `<target-repo>/.agents/plans/<artifact-slug>.md`).
 - **Ignore & Index Triad**: `.agents/plans/` is ignored in [`.gitignore`](./.gitignore), un-ignored in [`.ignore`](./.ignore) and [`.rgignore`](./.rgignore), and indexed in [`.vscode/settings.json`](./.vscode/settings.json) (`"search.useIgnoreFiles": false`).
+- **Authoritative Plan Suites**:
+  - [Modern Distribution & Universal CLI Architecture Suite](./.agents/plans/distro-distribution-and-cli-architecture/README.md): Master blueprint for cloud-native rootfs packaging, universal Go host readiness, and domain-driven bounded context refactoring.
 
 ## Required Skills
 

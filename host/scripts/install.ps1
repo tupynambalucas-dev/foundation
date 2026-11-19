@@ -10,7 +10,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
-    [string]$CatalogUrl = "https://raw.githubusercontent.com/tupynambalucas-dev/workstation/main/distros/catalog/DistributionInfo.json",
+    [string]$CatalogUrl = "https://github.com/tupynambalucas-dev/workstation/releases/latest/download/DistributionInfo.json",
 
     [Parameter(Mandatory = $false)]
     [switch]$ApplyWslConfig,

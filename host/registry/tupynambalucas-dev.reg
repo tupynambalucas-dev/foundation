@@ -1,4 +1,4 @@
 Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Lxss]
-"DistributionListUrlAppend"="https://raw.githubusercontent.com/tupynambalucas-dev/workstation/main/distros/catalog/DistributionInfo.json"
+"DistributionListUrlAppend"="https://github.com/tupynambalucas-dev/workstation/releases/latest/download/DistributionInfo.json"

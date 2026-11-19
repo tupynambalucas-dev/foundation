@@ -70,15 +70,20 @@ workstation/
 
 ## 2. Subsystems & Navigation
 
-| Layer | Subsystem / Workspace | Documentation | Agent Context | Responsibilities |
-| :-: | :--- | :--- | :--- | :--- |
-| **2** | **`distros/`** | [`distros/README.md`](./distros/README.md) | [`distros/AGENTS.md`](./distros/AGENTS.md) | Declarative WSL2 `.wsl` rootfs builds, `DistributionInfo.json` catalog, and shared OOBE/systemd scripts. |
-| **3** | **`distros/base/`** | [`distros/base/README.md`](./distros/base/README.md) | [`distros/base/AGENTS.md`](./distros/base/AGENTS.md) | `tupynambalucas-dev`: Ubuntu 26.04 LTS daily developer workstation (`node` 22, `pnpm` 12, `go` 1.27, `gh`, `mani`, `infisical`, socket-activated Docker). |
-| **3** | **`distros/cluster/`** | [`distros/cluster/README.md`](./distros/cluster/README.md) | [`distros/cluster/AGENTS.md`](./distros/cluster/AGENTS.md) | `tupynambalucas-dev-cluster`: Ubuntu 26.04 LTS Kubernetes engine (`docker-ce`, `k3d`, `kubectl`, `helm`, `skaffold`, `kubeseal`, kernel `sysctl` tuning). |
-| **2** | **`cli/`** | [`cli/README.md`](./cli/README.md) | [`cli/AGENTS.md`](./cli/AGENTS.md) | Multi-platform Go CLI suite (`tl` / `gh tl`) and shared infrastructure adapters (`cli/internal/*`). |
-| **3** | **`cli/domains/onboard/`** | [`cli/domains/onboard/README.md`](./cli/domains/onboard/README.md) | [`cli/domains/onboard/AGENTS.md`](./cli/domains/onboard/AGENTS.md) | Automated Ed25519 SSH signing setup, GitHub API key registration, conditional Git `includeIf`, and 7 readiness gates (`tl onboard` & `tl verify`). |
-| **3** | **`cli/domains/distro/`** | [`cli/domains/distro/README.md`](./cli/domains/distro/README.md) | [`cli/domains/distro/AGENTS.md`](./cli/domains/distro/AGENTS.md) | WSL2 catalog discovery, host inspection, and SHA-256 verified installation (`tl distro list\|status\|install`). |
-| **2** | **`host/`** | [`host/README.md`](./host/README.md) | [`host/AGENTS.md`](./host/AGENTS.md) | Windows Registry catalog injection (`tupynambalucas-dev.reg`), `.wslconfig.example` (`sparseVhd=true`), and Day-0 `install.ps1`. |
+Subsystems are classified according to enterprise Domain-Driven Design (DDD) strategic classifications (Core, Supporting, Generic) as defined in organizational principles:
+
+| Layer | Strategic Role | Subsystem / Workspace | Documentation | Agent Context | Responsibilities |
+| :-: | :--- | :--- | :--- | :--- | :--- |
+| **2** | **Core Domain** | **`distros/`** | [`distros/README.md`](./distros/README.md) | [`distros/AGENTS.md`](./distros/AGENTS.md) | Declarative WSL2 `.wsl` rootfs builds, `DistributionInfo.json` catalog, and shared OOBE/systemd scripts. |
+| **3** | Core Package | **`distros/base/`** | [`distros/base/README.md`](./distros/base/README.md) | [`distros/base/AGENTS.md`](./distros/base/AGENTS.md) | `tupynambalucas-dev`: Ubuntu 26.04 LTS daily developer workstation (`node` 22, `pnpm` 12, `go` 1.27, `gh`, `mani`, `infisical`, socket-activated Docker). |
+| **3** | Core Package | **`distros/cluster/`** | [`distros/cluster/README.md`](./distros/cluster/README.md) | [`distros/cluster/AGENTS.md`](./distros/cluster/AGENTS.md) | `tupynambalucas-dev-cluster`: Ubuntu 26.04 LTS Kubernetes engine (`docker-ce`, `k3d`, `kubectl`, `helm`, `skaffold`, `kubeseal`, kernel `sysctl` tuning). |
+| **2** | **Supporting Domain** | **`cli/`** | [`cli/README.md`](./cli/README.md) | [`cli/AGENTS.md`](./cli/AGENTS.md) | Multi-platform Go CLI suite (`tl` / `gh tl`) and shared infrastructure adapters (`cli/internal/*`). |
+| **3** | Supporting Slice | **`cli/domains/onboard/`** | [`cli/domains/onboard/README.md`](./cli/domains/onboard/README.md) | [`cli/domains/onboard/AGENTS.md`](./cli/domains/onboard/AGENTS.md) | Automated Ed25519 SSH signing setup, GitHub API key registration, conditional Git `includeIf`, and 7 readiness gates (`tl onboard` & `tl verify`). |
+| **3** | Supporting Slice | **`cli/domains/distro/`** | [`cli/domains/distro/README.md`](./cli/domains/distro/README.md) | [`cli/domains/distro/AGENTS.md`](./cli/domains/distro/AGENTS.md) | WSL2 catalog discovery, host inspection, and SHA-256 verified installation (`tl distro list\|status\|install`). |
+| **2** | **Generic Domain** | **`host/`** | [`host/README.md`](./host/README.md) | [`host/AGENTS.md`](./host/AGENTS.md) | Windows Registry catalog injection (`tupynambalucas-dev.reg`), `.wslconfig.example` (`sparseVhd=true`), and Day-0 `install.ps1`. |
+
+> [!NOTE]
+> For master technical plans, universal Go host readiness, and domain-driven refactoring blueprints, see the [Modern Distribution & Universal CLI Architecture Suite](./.agents/plans/distro-distribution-and-cli-architecture/README.md).
 
 ---
 

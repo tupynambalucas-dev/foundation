@@ -16,7 +16,7 @@ const (
 	// DefaultEmail is the canonical corporate developer email address (SSOT).
 	DefaultEmail = "contato@tupynambalucas.dev"
 	// DefaultCatalogURL is the canonical remote URL for the WSL ModernDistributions manifest (SSOT).
-	DefaultCatalogURL = "https://raw.githubusercontent.com/tupynambalucas-dev/workstation/main/distros/catalog/DistributionInfo.json"
+	DefaultCatalogURL = "https://github.com/tupynambalucas-dev/workstation/releases/latest/download/DistributionInfo.json"
 )
 
 // NormalizePath converts backslashes to forward slashes for Git config compatibility.
