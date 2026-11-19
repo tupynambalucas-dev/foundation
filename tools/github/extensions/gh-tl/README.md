@@ -34,11 +34,11 @@ tools/github/extensions/gh-tl/
 
 ## Domain Navigation
 
-| Domain Package | Documentation | Agent Router | Commands Provided |
+| Domain Package | Documentation | Commands Provided | Primary Responsibility |
 | :--- | :--- | :--- | :--- |
-| [`domains/onboard/`](./domains/onboard/README.md) | [`README.md`](./domains/onboard/README.md) | [`AGENTS.md`](./domains/onboard/AGENTS.md) | `tl onboard`, `tl verify` |
-| [`domains/distro/`](./domains/distro/README.md) | [`README.md`](./domains/distro/README.md) | [`AGENTS.md`](./domains/distro/AGENTS.md) | `tl distro list`, `tl distro status`, `tl distro install` |
-| [`domains/host/`](./domains/host/README.md) | [`README.md`](./domains/host/README.md) | [`AGENTS.md`](./domains/host/AGENTS.md) | `tl host prepare`, `tl host verify` |
+| [`domains/onboard/`](./domains/onboard/README.md) | [`README.md`](./domains/onboard/README.md) | `tl onboard`, `tl verify` | Developer identity onboarding, Ed25519 signing keys, and 7 readiness gates. |
+| [`domains/distro/`](./domains/distro/README.md) | [`README.md`](./domains/distro/README.md) | `tl distro list`, `tl distro status`, `tl distro install` | WSL2 ModernDistributions discovery, inspection, and streaming installation. |
+| [`domains/host/`](./domains/host/README.md) | [`README.md`](./domains/host/README.md) | `tl host prepare`, `tl host verify` | Windows host hypervisor governance, `.wslconfig` staging, and registry catalog federation. |
 
 ---
 

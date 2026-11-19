@@ -31,8 +31,8 @@ On first launch (`wsl --install tupynambalucas-dev`), `/etc/wsl-distribution.con
 
 ```bash
 mkdir -p output
-docker buildx build -f distros/base/Dockerfile -t tupynambalucas-dev-base:latest --load .
-docker buildx build -f distros/base/Dockerfile --target rootfs --output type=tar,dest=output/tupynambalucas-dev.tar .
+docker buildx build -f distributions/base/Dockerfile -t tupynambalucas-dev-base:latest --load .
+docker buildx build -f distributions/base/Dockerfile --target rootfs --output type=tar,dest=output/tupynambalucas-dev.tar .
 gzip -9 -f output/tupynambalucas-dev.tar
 mv output/tupynambalucas-dev.tar.gz output/tupynambalucas-dev.wsl
 ```
@@ -43,4 +43,5 @@ mv output/tupynambalucas-dev.tar.gz output/tupynambalucas-dev.wsl
 
 - [WSL2 Distributions Subsystem (`../README.md`)](../README.md)
 - [Cluster Kubernetes Distribution (`../cluster/README.md`)](../cluster/README.md)
+- [Documentation Hub (`../../references/README.md`)](../../references/README.md)
 - [Workstation Monorepo Root (`../../README.md`)](../../README.md)
