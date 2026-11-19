@@ -16,27 +16,27 @@ flowchart TD
         TSConfig["tsconfig.base.json & eslint.config.js"]
     end
 
-    subgraph Distros["Layer 2: distributions/ (Core Domain: Distribution-as-Code)"]
+    subgraph Distros["Layer 2: distributions/ (Bounded Context: WSL2 Distributions)"]
         Catalog["distributions/catalog/DistributionInfo.json"]
         BaseDistro["Layer 3: distributions/base/ (tupynambalucas-dev)"]
         ClusterDistro["Layer 3: distributions/cluster/ (tupynambalucas-dev-cluster)"]
         DistroPkg["package.json & tsconfig.json"]
     end
 
-    subgraph Tools["Layer 2: tools/ (Supporting Domain: Developer Toolchain & CLI)"]
+    subgraph Tools["Layer 2: tools/ (Bounded Context: Developer Toolchain & CLI)"]
         GHWorkspace["Layer 3: tools/github/ (GitHub CLI Ecosystem)"]
         CLIExt["Layer 3: tools/github/extensions/gh-tl/ (gh tl / tl)"]
         GoToolchain["Encapsulated go.mod & go.sum"]
         ToolsPkg["package.json & tsconfig.json"]
     end
 
-    subgraph Virt["Layer 2: virtualization/ (Generic Domain: Windows Virtualization)"]
+    subgraph Virt["Layer 2: virtualization/ (Bounded Context: Windows Virtualization)"]
         Reg["virtualization/registry/ (tupynambalucas-dev.reg)"]
         WslCfg["virtualization/config/ (.wslconfig.example)"]
         VirtPkg["package.json & tsconfig.json"]
     end
 
-    subgraph Refs["Layer 2: references/ (Documentation: Diataxis Hub)"]
+    subgraph Refs["Layer 2: references/ (Bounded Context: Documentation Hub)"]
         Tutorials["tutorials/ (Getting Started, Distro Builds)"]
         HowTos["how-to-guides/ (Catalog, K8s, CLI, Hypervisor)"]
         Reference["reference/ (CLI Spec, Catalog Schema, Package Matrix)"]
@@ -58,7 +58,7 @@ flowchart TD
 workstation/
 ├── .github/actions/            # Scoped composite actions (setup-go-env, setup-pnpm-env)
 ├── .github/workflows/          # CI matrix validation (ci.yml) and release pipelines (release.yml)
-├── distributions/              # Core Domain: WSL2 Distribution-as-Code (Layer 2)
+├── distributions/              # Bounded Context: WSL2 Distribution-as-Code (Layer 2)
 │   ├── package.json            # Workspace manifest (@tupynambalucas-dev/workstation-distributions)
 │   ├── tsconfig.json           # TypeScript project reference
 │   ├── src/index.ts            # Distribution exports & typing
@@ -66,7 +66,7 @@ workstation/
 │   ├── shared/                 # Shared OOBE provisioning and systemd masking scripts
 │   ├── base/                   # tupynambalucas-dev daily developer workstation image (Layer 3)
 │   └── cluster/                # tupynambalucas-dev-cluster Kubernetes engine image (Layer 3)
-├── tools/                      # Supporting Domain: Developer Toolchain & CLI (Layer 2)
+├── tools/                      # Bounded Context: Developer Toolchain & CLI (Layer 2)
 │   ├── tsconfig.json           # Solution-style TypeScript reference for tools
 │   └── github/                 # Layer 3: GitHub CLI Ecosystem & Extensions
 │       └── extensions/
@@ -77,14 +77,14 @@ workstation/
 │               ├── cmd/tl/     # CLI binary entrypoint (compiled by gh-extension-precompile)
 │               ├── domains/    # FSD business domains (distro, host, onboard)
 │               └── internal/   # Shared infrastructure adapters (contracts, git, github, ssh, wsl, ui)
-├── virtualization/             # Generic Domain: Windows Host & Hypervisor Governance (Layer 2)
+├── virtualization/             # Bounded Context: Windows Host & Hypervisor Governance (Layer 2)
 │   ├── package.json            # Workspace manifest (@tupynambalucas-dev/workstation-virtualization)
 │   ├── tsconfig.json           # TypeScript project reference
 │   ├── src/index.ts            # Virtualization domain exports
 │   ├── config/                 # Authoritative .wslconfig.example template
 │   ├── registry/               # tupynambalucas-dev.reg Windows Registry catalog federation
 │   └── scripts/                # Host helper scripts (install.ps1 with deprecation notice)
-├── references/                 # Documentation Subsystem: Diataxis Documentation Hub (Layer 2)
+├── references/                 # Bounded Context: Diataxis Documentation Hub (Layer 2)
 │   ├── README.md               # Master documentation index and quadrant navigation
 │   ├── AGENTS.md               # Documentation subsystem AI context router
 │   ├── tutorials/              # Learning-oriented guides (Getting Started, Distro Builds)
@@ -106,18 +106,18 @@ workstation/
 
 ## 2. Subsystems & Navigation
 
-Subsystems are classified according to enterprise Domain-Driven Design (DDD) strategic classifications (Core, Supporting, Generic) as defined in organizational principles:
+Subsystems are organized into autonomous enterprise Bounded Contexts conforming to the Domain-Driven Monorepo standard. Each Bounded Context maintains explicit architectural boundaries, ubiquitous language, and dedicated AI agent routers:
 
-| Layer | Strategic Role | Subsystem / Workspace | Documentation | Agent Context | Responsibilities |
+| Layer | Bounded Context / Workspace | Scope / Package | Documentation | Agent Context | Responsibilities |
 | :-: | :--- | :--- | :--- | :--- | :--- |
-| **2** | **Core Domain** | **`distributions/`** | [`distributions/README.md`](./distributions/README.md) | [`distributions/AGENTS.md`](./distributions/AGENTS.md) | Declarative WSL2 `.wsl` rootfs builds, `DistributionInfo.json` catalog, and shared OOBE/systemd scripts. |
-| **3** | Core Package | **`distributions/base/`** | [`distributions/base/README.md`](./distributions/base/README.md) | [`distributions/base/AGENTS.md`](./distributions/base/AGENTS.md) | `tupynambalucas-dev`: Ubuntu 26.04 LTS daily developer workstation (`node` 22, `pnpm` 12, `go` 1.27, `gh`, `mani`, `infisical`, socket-activated Docker). |
-| **3** | Core Package | **`distributions/cluster/`** | [`distributions/cluster/README.md`](./distributions/cluster/README.md) | [`distributions/cluster/AGENTS.md`](./distributions/cluster/AGENTS.md) | `tupynambalucas-dev-cluster`: Ubuntu 26.04 LTS Kubernetes engine (`docker-ce`, `k3d`, `kubectl`, `helm`, `skaffold`, `kubeseal`, kernel `sysctl` tuning). |
-| **2** | **Supporting Domain** | **`tools/`** | [`tools/README.md`](./tools/README.md) | [`tools/AGENTS.md`](./tools/AGENTS.md) | Developer toolchain workspace and multi-extension orchestration. |
-| **3** | Supporting Workspace | **`tools/github/`** | [`tools/github/README.md`](./tools/github/README.md) | [`tools/github/AGENTS.md`](./tools/github/AGENTS.md) | GitHub CLI ecosystem and extension modules. |
-| **3** | Supporting Package | **`tools/github/extensions/gh-tl/`** | [`tools/github/extensions/gh-tl/README.md`](./tools/github/extensions/gh-tl/README.md) | [`tools/github/extensions/gh-tl/AGENTS.md`](./tools/github/extensions/gh-tl/AGENTS.md) | Multi-platform Go CLI (`gh tl` / `tl`): cryptographic onboarding, host readiness, and WSL distribution lifecycle. |
-| **2** | **Generic Domain** | **`virtualization/`** | [`virtualization/README.md`](./virtualization/README.md) | [`virtualization/AGENTS.md`](./virtualization/AGENTS.md) | Windows Registry catalog injection (`tupynambalucas-dev.reg`), `.wslconfig.example` (`sparseVhd=true`), and hypervisor memory bounds. |
-| **2** | **Documentation** | **`references/`** | [`references/README.md`](./references/README.md) | [`references/AGENTS.md`](./references/AGENTS.md) | Diataxis-structured technical documentation hub (tutorials, how-to-guides, technical reference, architecture explanation). |
+| **2** | **`distributions/`** | `@tupynambalucas-dev/workstation-distributions` | [`distributions/README.md`](./distributions/README.md) | [`distributions/AGENTS.md`](./distributions/AGENTS.md) | Declarative WSL2 `.wsl` rootfs builds, `DistributionInfo.json` catalog, and shared OOBE/systemd scripts. |
+| **3** | `distributions/base/` | Sub-package | [`distributions/base/README.md`](./distributions/base/README.md) | [`distributions/base/AGENTS.md`](./distributions/base/AGENTS.md) | `tupynambalucas-dev`: Ubuntu 26.04 LTS daily developer workstation (`node` 22, `pnpm` 12, `go` 1.27, `gh`, `mani`, `infisical`, socket-activated Docker). |
+| **3** | `distributions/cluster/` | Sub-package | [`distributions/cluster/README.md`](./distributions/cluster/README.md) | [`distributions/cluster/AGENTS.md`](./distributions/cluster/AGENTS.md) | `tupynambalucas-dev-cluster`: Ubuntu 26.04 LTS Kubernetes engine (`docker-ce`, `k3d`, `kubectl`, `helm`, `skaffold`, `kubeseal`, kernel `sysctl` tuning). |
+| **2** | **`tools/`** | Workspace Solution | [`tools/README.md`](./tools/README.md) | [`tools/AGENTS.md`](./tools/AGENTS.md) | Developer toolchain workspace and multi-extension orchestration. |
+| **3** | `tools/github/` | Toolchain Ecosystem | [`tools/github/README.md`](./tools/github/README.md) | [`tools/github/AGENTS.md`](./tools/github/AGENTS.md) | GitHub CLI ecosystem and extension modules. |
+| **3** | `tools/github/extensions/gh-tl/` | `@tupynambalucas-dev/workstation-gh-tl` | [`tools/github/extensions/gh-tl/README.md`](./tools/github/extensions/gh-tl/README.md) | [`tools/github/extensions/gh-tl/AGENTS.md`](./tools/github/extensions/gh-tl/AGENTS.md) | Multi-platform Go CLI (`gh tl` / `tl`): cryptographic onboarding, host readiness, and WSL distribution lifecycle. |
+| **2** | **`virtualization/`** | `@tupynambalucas-dev/workstation-virtualization` | [`virtualization/README.md`](./virtualization/README.md) | [`virtualization/AGENTS.md`](./virtualization/AGENTS.md) | Windows Registry catalog injection (`tupynambalucas-dev.reg`), `.wslconfig.example` (`sparseVhd=true`), and hypervisor memory bounds. |
+| **2** | **`references/`** | Documentation Hub | [`references/README.md`](./references/README.md) | [`references/AGENTS.md`](./references/AGENTS.md) | Diataxis-structured technical documentation hub (tutorials, how-to-guides, technical reference, architecture explanation). |
 
 > [!NOTE]
 > For master technical plans, universal Go host readiness, and domain-driven refactoring blueprints, see the [Modern Distribution & Universal CLI Architecture Suite](./.agents/plans/distro-distribution-and-cli-architecture/README.md).
