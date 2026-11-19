@@ -1,0 +1,17 @@
+{
+  "name": "@tupynambalucas-dev/workstation-gh-tl",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise GitHub CLI Extension for workstation host governance and distro installation.",
+  "type": "module",
+  "scripts": {
+    "build": "go build -v -o bin/gh-tl ./cmd/tl",
+    "test": "go test -v ./...",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

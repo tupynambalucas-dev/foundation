@@ -4,9 +4,9 @@
 *.dll
 *.so
 *.dylib
-tl
-gh-tl
-gh-workstation
+/tl
+/gh-tl
+/gh-workstation
 bin/
 
 # Build & WSL Distribution Output Artifacts

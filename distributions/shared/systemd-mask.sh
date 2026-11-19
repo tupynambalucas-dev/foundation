@@ -24,4 +24,5 @@ done
 
 # Ensure rootfs hygiene invariants required by WSL 2.4.4+
 rm -f /etc/resolv.conf
+# shellcheck disable=SC2115
 rm -rf /boot/* /var/lib/apt/lists/* /tmp/* /var/tmp/*
