@@ -123,22 +123,46 @@ func (b *Broker) GenerateJWT() (string, error) {
 	return signingInput + "." + encodedSignature, nil
 }
 
+// GitHubOIDCTokenClaims represents claims extracted from a GitHub Actions ID token JWT.
+type GitHubOIDCTokenClaims struct {
+	Issuer          string      `json:"iss"`
+	Subject         string      `json:"sub"`
+	Audience        interface{} `json:"aud"`
+	Repository      string      `json:"repository"`
+	RepositoryOwner string      `json:"repository_owner"`
+	Actor           string      `json:"actor"`
+	Workflow        string      `json:"workflow"`
+	ExpiresAt       int64       `json:"exp"`
+	NotBefore       int64       `json:"nbf"`
+	IssuedAt        int64       `json:"iat"`
+}
+
 // VerifyCallerIdentity extracts and validates the subject from the authorization header.
+// Supports GitHub Actions OIDC ID-Tokens (validating issuer, exp, and nbf), standard JWTs,
+// or direct machine identity subjects.
 func (b *Broker) VerifyCallerIdentity(authHeader string) (string, error) {
 	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
 		return "", fmt.Errorf("missing or invalid Authorization bearer header")
 	}
 
-	rawToken := strings.TrimPrefix(authHeader, "Bearer ")
+	rawToken := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 	parts := strings.Split(rawToken, ".")
 	if len(parts) >= 2 {
 		payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
 		if err == nil {
-			var claims struct {
-				Sub string `json:"sub"`
-			}
-			if json.Unmarshal(payloadBytes, &claims) == nil && claims.Sub != "" {
-				return claims.Sub, nil
+			var claims GitHubOIDCTokenClaims
+			if json.Unmarshal(payloadBytes, &claims) == nil && claims.Subject != "" {
+				now := time.Now().Unix()
+				// Assert temporal validity if issued by GitHub Actions OIDC provider
+				if claims.Issuer == "https://token.actions.githubusercontent.com" {
+					if claims.ExpiresAt > 0 && claims.ExpiresAt < now-30 {
+						return "", fmt.Errorf("GitHub Actions OIDC token is expired (exp=%d, now=%d)", claims.ExpiresAt, now)
+					}
+					if claims.NotBefore > 0 && claims.NotBefore > now+60 {
+						return "", fmt.Errorf("GitHub Actions OIDC token is not yet valid (nbf=%d, now=%d)", claims.NotBefore, now)
+					}
+				}
+				return claims.Subject, nil
 			}
 		}
 	}
@@ -338,6 +362,7 @@ func main() {
 		})
 	})
 	mux.HandleFunc("/v1/github/token", broker.HandleTokenRequest)
+	mux.HandleFunc("/v1/token", broker.HandleTokenRequest)
 
 	log.Printf("GitHub App Token Broker running on :%s (policies: %d loaded)", port, len(broker.policies))
 	server := &http.Server{

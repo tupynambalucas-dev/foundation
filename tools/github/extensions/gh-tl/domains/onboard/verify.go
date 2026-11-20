@@ -47,23 +47,50 @@ func RunVerify() error {
 		failedGates++
 	}
 
-	// Gate 2: SSH Signing Key Existence
+	// Gate 2: SSH Signing Key Existence and Online Verification
 	fmt.Print("[Gate 2/7] Inspecting Ed25519 signing key... ")
 	home, _ := os.UserHomeDir()
 	defaultPubKey := filepath.Join(home, ".ssh", "github_tupynambalucas-dev_ed25519.pub")
 	legacyPubKey := filepath.Join(home, ".ssh", "github_tupynambalucas_ed25519.pub")
 	signingKeyConfig, _ := git.GetConfig("user.signingkey")
 
+	var activePubKeyPath string
 	if signingKeyConfig != "" && ssh.KeyExists(signingKeyConfig) {
-		ui.PrintPass(fmt.Sprintf("Active signing key detected: %s", signingKeyConfig))
+		activePubKeyPath = signingKeyConfig
 	} else if ssh.KeyExists(defaultPubKey) {
-		ui.PrintPass(fmt.Sprintf("Key found at %s", defaultPubKey))
+		activePubKeyPath = defaultPubKey
 	} else if ssh.KeyExists(legacyPubKey) {
-		ui.PrintPass(fmt.Sprintf("Key found at %s", legacyPubKey))
-	} else {
-		ui.PrintFail("Ed25519 signing key not found")
+		activePubKeyPath = legacyPubKey
+	}
+
+	if activePubKeyPath == "" {
+		ui.PrintFail("Ed25519 signing key not found on local disk")
 		ui.PrintRemediation("Run 'gh tl onboard' to generate and provision your corporate keypair")
 		failedGates++
+	} else {
+		// Read key content from disk to verify online profile enrollment
+		pubKeyContent, readErr := ssh.ReadPublicKey(activePubKeyPath)
+		if readErr != nil {
+			ui.PrintFail(fmt.Sprintf("Failed reading local key %s: %v", activePubKeyPath, readErr))
+			failedGates++
+		} else {
+			// Resolve current user to verify online enrollment
+			user, userErr := github.GetCurrentUser()
+			if userErr != nil || user == nil || user.Login == "" {
+				ui.PrintPass(fmt.Sprintf("Local key active: %s (online check skipped: gh unauthenticated)", filepath.Base(activePubKeyPath)))
+			} else {
+				enrolled, enrollErr := github.IsSigningKeyEnrolled(user.Login, pubKeyContent)
+				if enrollErr != nil {
+					ui.PrintPass(fmt.Sprintf("Local key active: %s (online check warning: %v)", filepath.Base(activePubKeyPath), enrollErr))
+				} else if enrolled {
+					ui.PrintPass(fmt.Sprintf("Key active locally and verified on GitHub profile (@%s)", user.Login))
+				} else {
+					ui.PrintFail(fmt.Sprintf("Key exists locally (%s) but is NOT registered on GitHub profile (@%s) as a Signing Key", filepath.Base(activePubKeyPath), user.Login))
+					ui.PrintRemediation("Upload to https://github.com/settings/keys (Select 'Signing Key') or authenticate via 'gh auth login --web -s admin:ssh_signing_key' and run 'gh tl onboard'")
+					failedGates++
+				}
+			}
+		}
 	}
 
 	// Gate 3: Commit Cryptographic Signing Configuration
