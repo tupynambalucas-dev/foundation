@@ -44,8 +44,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2026-10-31
 
+Initial release of the `tupynambalucas-dev` developer workstation tooling and GitHub CLI extension suite.
+
 ### Features & Capabilities
-- **cli**: initial release of the `gh-tl` extension providing basic onboarding commands and host preparation.
+- [feat(cli): initialize unified gh-tl extension suite combining developer onboarding and system tools](https://github.com/tupynambalucas-dev/workstation/commit/49ae855)
+- [feat(onboard): cryptographic developer onboarding with SSH Ed25519 key generation and Git signing](https://github.com/tupynambalucas-dev/workstation/commit/531ad0d)
+
+### Refactoring & Internal Architecture
+- [refactor(cli): modularize command structure and encapsulate domain implementations](https://github.com/tupynambalucas-dev/workstation/commit/dbcba51)
+
+### Documentation & Specifications
+- [docs(governance): add Layer-1 AGENTS.md context router and developer runbooks](https://github.com/tupynambalucas-dev/workstation/commit/8a18075)
+- [docs(release): set release version tag reference to v0.1.0](https://github.com/tupynambalucas-dev/workstation/commit/c4718a5)
 
 [0.2.0]: https://github.com/tupynambalucas-dev/workstation/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/tupynambalucas-dev/workstation/releases/tag/v0.1.0

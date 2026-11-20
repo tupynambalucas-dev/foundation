@@ -166,6 +166,6 @@ jobs:
             output/tupynambalucas-dev-cluster.wsl \
             output/DistributionInfo.json \
             output/tupynambalucas-dev.reg \
-            --title "Workstation ${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
             --notes-file output/RELEASE_NOTES.md \
             --verify-tag
