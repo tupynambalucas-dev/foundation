@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-11-20",
   "compatibility_flags": ["nodejs_compat"],
-  "workers_dev": false,
+  "workers_dev": true,
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
@@ -13,8 +13,7 @@
   },
   "routes": [
     {
-      "pattern": "apps.tupynambalucas.dev/*",
-      "zone_name": "tupynambalucas.dev",
+      "pattern": "apps.tupynambalucas.dev",
       "custom_domain": true
     }
   ],
