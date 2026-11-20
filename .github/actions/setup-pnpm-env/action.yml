@@ -1,0 +1,26 @@
+name: "Setup pnpm Environment"
+description: "Configures Node.js, pnpm, and global dependency store with hermetic caching"
+
+inputs:
+  node-version:
+    description: "Node.js version to configure"
+    required: false
+    default: "22"
+  pnpm-version:
+    description: "pnpm version to install"
+    required: false
+    default: "12.6.0"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Install pnpm"
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - name: "Setup Node.js"
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: "pnpm"

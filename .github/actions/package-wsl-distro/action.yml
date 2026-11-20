@@ -1,0 +1,54 @@
+name: "Package WSL2 Distribution Tarball"
+description: "Builds root filesystem using Docker Buildx, creates compressed .wsl tarball, and outputs SHA-256 digest"
+
+inputs:
+  distro-name:
+    description: "Distribution name identifier (e.g., tupynambalucas-dev or tupynambalucas-dev-cluster)"
+    required: true
+  dockerfile-path:
+    description: "Path to distribution Dockerfile"
+    required: true
+  build-args:
+    description: "Additional docker build arguments"
+    required: false
+    default: ""
+  output-dir:
+    description: "Directory where .wsl archive will be written"
+    required: false
+    default: "output"
+
+outputs:
+  archive-path:
+    description: "Path to generated .wsl file"
+    value: "${{ inputs.output-dir }}/${{ inputs.distro-name }}.wsl"
+  sha256-digest:
+    description: "Cryptographic SHA-256 digest with 0x prefix"
+    value: ${{ steps.calc-sha.outputs.digest }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Create Output Directory"
+      shell: bash
+      run: mkdir -p ${{ inputs.output-dir }}
+
+    - name: "Compile Root Filesystem"
+      shell: bash
+      run: |
+        docker buildx build -f ${{ inputs.dockerfile-path }} \
+          ${{ inputs.build-args }} \
+          --target rootfs \
+          --output type=tar,dest=${{ inputs.output-dir }}/${{ inputs.distro-name }}.tar .
+
+    - name: "Compress Tarball (.wsl)"
+      shell: bash
+      run: |
+        gzip -9 -f ${{ inputs.output-dir }}/${{ inputs.distro-name }}.tar
+        mv ${{ inputs.output-dir }}/${{ inputs.distro-name }}.tar.gz ${{ inputs.output-dir }}/${{ inputs.distro-name }}.wsl
+
+    - name: "Compute SHA-256 Digest"
+      id: calc-sha
+      shell: bash
+      run: |
+        RAW_HASH=$(sha256sum ${{ inputs.output-dir }}/${{ inputs.distro-name }}.wsl | awk '{print $1}')
+        echo "digest=0x${RAW_HASH}" >> $GITHUB_OUTPUT

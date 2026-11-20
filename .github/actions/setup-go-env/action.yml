@@ -1,0 +1,21 @@
+name: "Setup Go Development Environment"
+description: "Configures Go compiler, module caching, and golangci-lint toolchain"
+
+inputs:
+  go-version-file:
+    description: "Path to go.mod file determining the Go toolchain version"
+    required: false
+    default: "tools/github/extensions/gh-tl/go.mod"
+  cache-dependency-path:
+    description: "Path to go.sum for caching"
+    required: false
+    default: "tools/github/extensions/gh-tl/go.sum"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Setup Go Compiler"
+      uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      with:
+        go-version-file: ${{ inputs.go-version-file }}
+        cache-dependency-path: ${{ inputs.cache-dependency-path }}
