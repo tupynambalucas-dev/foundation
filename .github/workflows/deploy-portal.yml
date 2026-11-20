@@ -30,7 +30,7 @@ jobs:
         uses: ./.github/actions/setup-pnpm-env
 
       - name: Deploy Portal via Wrangler Action
-        uses: cloudflare/wrangler-action@392082b2609c15d4004944b58498f263152ef3ff # v4.0.0
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
