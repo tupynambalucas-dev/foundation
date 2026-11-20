@@ -4,27 +4,8 @@ export interface Env {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-
-    // Clean URL rewrites for root and subpages
-    if (url.pathname === "/privacy") {
-      url.pathname = "/privacy.html";
-      return env.ASSETS.fetch(new Request(url.toString(), request));
-    }
-    if (url.pathname === "/terms") {
-      url.pathname = "/terms.html";
-      return env.ASSETS.fetch(new Request(url.toString(), request));
-    }
-    if (url.pathname === "/rclone" || url.pathname === "/rclone/") {
-      url.pathname = "/rclone/index.html";
-      return env.ASSETS.fetch(new Request(url.toString(), request));
-    }
-    if (url.pathname === "/workspace" || url.pathname === "/workspace/") {
-      url.pathname = "/workspace/index.html";
-      return env.ASSETS.fetch(new Request(url.toString(), request));
-    }
-
-    // Fetch the asset from Cloudflare Workers edge static storage
+    // Cloudflare Workers Static Assets automatically resolves clean URLs,
+    // directory index files (e.g. /rclone -> /rclone/index.html), and 404-page handling.
     const response = await env.ASSETS.fetch(request);
 
     // Apply enterprise security headers on all responses
