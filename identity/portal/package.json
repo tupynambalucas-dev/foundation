@@ -1,0 +1,19 @@
+{
+  "name": "@tupynambalucas-dev/identity-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Workers serverless portal hosting enterprise application identities, OAuth brand verification landing pages, and compliance policies for apps.tupynambalucas.dev.",
+  "author": "Tupynambá Lucas Varela Rodrigues <tupynambalucas.dev>",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250214.0",
+    "typescript": "catalog:"
+  }
+}

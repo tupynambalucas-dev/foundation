@@ -12,6 +12,7 @@ packages:
   - 'distributions'
   - 'tools/github/extensions/*'
   - 'virtualization'
+  - 'identity/portal'
 
 catalog:
   '@types/node': ^26.6.2

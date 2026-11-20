@@ -1,0 +1,21 @@
+{
+  "tier": 1,
+  "name": "tupynambalucas-org-manager",
+  "plane": "administrative",
+  "permissions": {
+    "organization": {
+      "administration": "write",
+      "members": "write",
+      "custom_roles": "write",
+      "secrets": "write",
+      "projects": "write",
+      "plan": "read"
+    },
+    "repository": {
+      "administration": "write",
+      "secrets": "write"
+    }
+  },
+  "events": [],
+  "token_ttl_seconds": 3600
+}

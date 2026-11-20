@@ -1,0 +1,38 @@
+name: Deploy Identity Portal to Cloudflare
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "identity/portal/**"
+      - ".github/workflows/deploy-portal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-portal-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Cloudflare Workers
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js & pnpm
+        uses: ./.github/actions/setup-pnpm-env
+
+      - name: Deploy Portal via Wrangler Action
+        uses: cloudflare/wrangler-action@392082b2609c15d4004944b58498f263152ef3ff # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: "identity/portal"
+          command: deploy

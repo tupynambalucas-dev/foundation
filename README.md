@@ -1,12 +1,12 @@
-# Developer Workstation & CLI Monorepo (`tupynambalucas-dev/workstation`)
+# Enterprise Foundation & Identity Monorepo (`tupynambalucas-dev/foundation`)
 
-Sovereign enterprise monorepo hosting WSL2 Distribution-as-Code (`.wsl` Modern Distributions on Ubuntu 26.04 LTS), the `tl` / `gh tl` Go Developer CLI & GitHub CLI Extension suite, Windows Host virtualization governance, unified pnpm workspaces, and Turborepo task pipeline orchestration.
+Sovereign enterprise monorepo hosting WSL2 Distribution-as-Code (`.wsl` Modern Distributions on Ubuntu 26.04 LTS), the `tl` / `gh tl` Go Developer CLI & GitHub CLI Extension suite, machine identity & Token Broker governance (`identity/`), Cloudflare Workers serverless portal (`apps.tupynambalucas.dev`), Windows Host virtualization governance, unified pnpm workspaces, and Turborepo task pipeline orchestration.
 
 ---
 
 ## 1. Architecture Overview
 
-`workstation` consolidates developer environment provisioning, WSL2 operating system images, cryptographic SSH identity onboarding, and host hypervisor configuration into an enterprise monorepo governed by **Domain-Driven Design (DDD)**, **Feature-Sliced Design (FSD)**, **SOLID**, and **Clean Root** principles:
+`foundation` consolidates developer environment provisioning, WSL2 operating system images, cryptographic machine identities, Token Vending Machine, and host hypervisor configuration into an enterprise monorepo governed by **Domain-Driven Design (DDD)**, **Feature-Sliced Design (FSD)**, **SOLID**, and **Clean Root** principles:
 
 ```mermaid
 flowchart TD

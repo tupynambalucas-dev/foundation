@@ -1,0 +1,16 @@
+{
+  "app_slug": "workspace-automation",
+  "app_name": "Workspace Automation Services",
+  "provider": "google-cloud",
+  "client_type": "service-account",
+  "project_id": "tupynambalucas-dev-core",
+  "support_email": "tupynambalucas@gmail.com",
+  "branding": {
+    "homepage_url": "https://apps.tupynambalucas.dev/workspace",
+    "privacy_policy_url": "https://apps.tupynambalucas.dev/privacy",
+    "terms_of_service_url": "https://apps.tupynambalucas.dev/terms",
+    "authorized_domains": [
+      "tupynambalucas.dev"
+    ]
+  }
+}
