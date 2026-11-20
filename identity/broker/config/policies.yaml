@@ -1,0 +1,53 @@
+# policies.yaml
+# Governança de Políticas de Acesso como Código (Policy-as-Code) do GitHub App Token Broker
+# Mapeia quem pede (subject) para o que pode acessar (repositories e permissions).
+
+policies:
+  # Permissão para runners de CI/CD do GitHub Actions em pipelines corporativos
+  - subject: "repo:tupynambalucas-dev/platform:ref:refs/heads/main"
+    allowed_repositories:
+      - "platform"
+      - "foundation"
+      - "docs"
+    allowed_permissions:
+      contents: "write"
+      pull_requests: "write"
+      packages: "write"
+
+  - subject: "repo:tupynambalucas-dev/foundation:ref:refs/heads/main"
+    allowed_repositories:
+      - "foundation"
+    allowed_permissions:
+      contents: "write"
+      pull_requests: "write"
+      packages: "write"
+
+  - subject: "repo:tupynambalucas-dev/omnichannel:ref:refs/heads/main"
+    allowed_repositories:
+      - "omnichannel"
+    allowed_permissions:
+      contents: "write"
+      pull_requests: "write"
+      packages: "write"
+
+  # Permissão para agentes de engenharia (agent-mesh)
+  - subject: "agent-mesh-autonomous-worker"
+    allowed_repositories:
+      - "platform"
+      - "foundation"
+      - "docs"
+      - "omnichannel"
+      - "elo-organico"
+      - "tessel"
+    allowed_permissions:
+      contents: "write"
+      pull_requests: "write"
+      issues: "write"
+
+  # Permissão para auditoria de vulnerabilidades e segurança
+  - subject: "security-auditor"
+    allowed_repositories:
+      - "*"
+    allowed_permissions:
+      contents: "read"
+      security_events: "read"

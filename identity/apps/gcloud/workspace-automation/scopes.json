@@ -1,0 +1,17 @@
+[
+  {
+    "scope": "https://www.googleapis.com/auth/spreadsheets",
+    "description": "Read and write access to Google Sheets for AppSheet tabular backend synthesis.",
+    "required": true
+  },
+  {
+    "scope": "https://www.googleapis.com/auth/documents",
+    "description": "Read and write access to Google Docs for architectural specification publication.",
+    "required": true
+  },
+  {
+    "scope": "https://www.googleapis.com/auth/drive.file",
+    "description": "Management of generated workspace folders and files.",
+    "required": true
+  }
+]

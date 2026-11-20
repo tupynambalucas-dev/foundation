@@ -1,0 +1,22 @@
+{
+  "tier": 2,
+  "name": "tupynambalucas-ci-bot",
+  "plane": "automation",
+  "permissions": {
+    "repository": {
+      "actions": "write",
+      "checks": "write",
+      "contents": "write",
+      "deployments": "write",
+      "issues": "write",
+      "metadata": "read",
+      "packages": "write",
+      "pull_requests": "write",
+      "statuses": "write",
+      "workflows": "write",
+      "attestations": "write"
+    }
+  },
+  "events": [],
+  "token_ttl_seconds": 3600
+}

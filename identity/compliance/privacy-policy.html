@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Política de Privacidade e Proteção de Dados - tupynambalucas-dev</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1f2328; max-width: 860px; margin: 40px auto; padding: 0 20px; }
+    h1 { border-bottom: 1px solid #d0d7de; padding-bottom: 12px; font-size: 28px; }
+    h2 { margin-top: 28px; font-size: 20px; color: #0969da; }
+    p, li { font-size: 15px; }
+    code { background-color: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .box { background-color: #f6f8fa; border: 1px solid #d0d7de; padding: 16px; border-radius: 6px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h1>Política de Privacidade e Tratamento de Dados</h1>
+  <p><strong>Organização Responsável</strong>: tupynambalucas-dev (Lucas Tupynambá)<br />
+  <strong>Domínio Autorizado</strong>: <code>tupynambalucas.dev</code><br />
+  <strong>Última Atualização</strong>: 2026-11-20</p>
+
+  <div class="box">
+    <strong>Resumo da Política</strong>: Os aplicativos, ferramentas de linha de comando e utilitários desenvolvidos sob o domínio <code>tupynambalucas.dev</code> (incluindo clientes de sincronização de arquivos Rclone e agentes de integração de produtividade) acessam dados de contas de usuários estritamente para executar as funcionalidades operacionais solicitadas de forma transparente e segura. Nenhum dado é vendido, transmitido a terceiros ou utilizado para treinamento de modelos de inteligência artificial.
+  </div>
+
+  <h2>1. Escopo de Aplicação</h2>
+  <p>Esta Política de Privacidade aplica-se universalmente a todos os serviços, integrações de software, ferramentas CLI e aplicativos OAuth autenticados sob o domínio <code>tupynambalucas.dev</code>, incluindo:</p>
+  <ul>
+    <li><strong>Rclone Windows Desktop Client</strong> (Sincronização de unidades virtuais Google Drive via WinFsp para contas pessoais e corporativas).</li>
+    <li><strong>Workspace & AppSheet Automation Services</strong> (Agentes de manipulação de relatórios, planilhas e documentos corporativos).</li>
+    <li><strong>Developer Tools & Extensions CLI</strong> (Utilitários operacionais locais).</li>
+  </ul>
+
+  <h2>2. Dados Coletados e Finalidade do Tratamento</h2>
+  <p>Nossos aplicativos acessam exclusivamente as informações autorizadas pelo usuário durante a tela de consentimento OAuth do Google:</p>
+  <ul>
+    <li><strong>Arquivos e Pastas do Google Drive (<code>drive</code> / <code>drive.file</code>)</strong>: O aplicativo Rclone acessa arquivos única e exclusivamente para leitura, gravação e montagem de discos locais no sistema operacional do usuário. Os arquivos trafegam de forma cifrada diretamente entre o cliente local e os servidores da Google LLC.</li>
+    <li><strong>Planilhas e Documentos do Google Workspace (<code>spreadsheets</code> / <code>documents</code>)</strong>: Utilizados para leitura e escrita de registros parametrizados requisitados explicitamente pelo usuário.</li>
+  </ul>
+
+  <h2>3. Conformidade com a Google API Services User Data Policy</h2>
+  <p>O uso e a transferência de informações recebidas das APIs do Google para qualquer outro aplicativo seguirão estritamente a <strong>Google API Services User Data Policy</strong>, incluindo os requisitos de <em>Limited Use</em>:</p>
+  <ul>
+    <li><strong>Sem Comercialização</strong>: Nenhuma informação pessoal ou de arquivos de usuários é compartilhada, alugada ou vendida para terceiros.</li>
+    <li><strong>Sem Treinamento de IA</strong>: Os dados dos usuários não são utilizados para treinar modelos generalistas ou proprietários de inteligência artificial ou aprendizado de máquina.</li>
+    <li><strong>Armazenamento Hermético</strong>: Chaves de API e tokens de atualização (refresh tokens) residem exclusivamente no dispositivo local do usuário sob permissões restritas de sistema de arquivos ou em cofres de segredos criptografados (Infisical).</li>
+  </ul>
+
+  <h2>4. Revogação de Acesso e Exclusão de Credenciais</h2>
+  <p>O usuário mantém controle integral sobre suas autorizações. O acesso pode ser rescindido a qualquer momento:</p>
+  <ol>
+    <li>Acessando a página de segurança oficial do Google: <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>.</li>
+    <li>Localizando o aplicativo correspondente (ex.: <em>Rclone Windows Client</em>) e clicando em <strong>Remover Acesso</strong>.</li>
+    <li>Localmente, o usuário pode excluir o arquivo de configuração de credenciais a qualquer momento (ex.: <code>rclone config</code>).</li>
+  </ol>
+
+  <h2>5. Contato do Desenvolvedor</h2>
+  <p>Dúvidas sobre o tratamento de dados e segurança de aplicações podem ser encaminhadas diretamente ao mantenedor da infraestrutura:</p>
+  <p><strong>Lucas Tupynambá</strong><br />
+  E-mail: <code>tupynambalucas@gmail.com</code><br />
+  Website: <a href="https://tupynambalucas.dev">https://tupynambalucas.dev</a><br />
+  Portal: <a href="https://apps.tupynambalucas.dev">https://apps.tupynambalucas.dev</a></p>
+</body>
+</html>

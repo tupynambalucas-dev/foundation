@@ -1,0 +1,25 @@
+{
+  "name": "tupynambalucas-ci-bot",
+  "url": "https://apps.tupynambalucas.dev",
+  "description": "Autonomous CI/CD and repository automation bot for tupynambalucas-dev.",
+  "hook_attributes": {
+    "url": "https://apps.tupynambalucas.dev/webhooks/github",
+    "active": false
+  },
+  "redirect_url": "http://localhost:3333/callback",
+  "public": false,
+  "default_permissions": {
+    "actions": "write",
+    "checks": "write",
+    "contents": "write",
+    "deployments": "write",
+    "issues": "write",
+    "metadata": "read",
+    "packages": "write",
+    "pull_requests": "write",
+    "statuses": "write",
+    "workflows": "write",
+    "attestations": "write"
+  },
+  "default_events": []
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "scope": "https://www.googleapis.com/auth/drive",
+    "description": "Full access to Google Drive files for virtual disk mounting and bidirectional syncing.",
+    "required": true
+  },
+  {
+    "scope": "https://www.googleapis.com/auth/drive.file",
+    "description": "Access to files created or opened by the application.",
+    "required": false
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "name": "tupynambalucas-org-manager",
+  "url": "https://apps.tupynambalucas.dev",
+  "description": "Administrative and governance management bot for the tupynambalucas-dev organization.",
+  "hook_attributes": {
+    "url": "https://apps.tupynambalucas.dev/webhooks/github",
+    "active": false
+  },
+  "redirect_url": "http://localhost:3333/callback",
+  "public": false,
+  "default_permissions": {
+    "administration": "write",
+    "members": "write",
+    "organization_administration": "write",
+    "organization_custom_roles": "write",
+    "organization_plan": "read",
+    "organization_projects": "write",
+    "organization_secrets": "write",
+    "secrets": "write",
+    "team_discussions": "write"
+  },
+  "default_events": []
+}

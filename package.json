@@ -1,14 +1,14 @@
 {
-  "name": "@tupynambalucas-dev/workstation",
+  "name": "@tupynambalucas-dev/foundation",
   "version": "1.0.0",
   "private": true,
-  "description": "Enterprise workstation monorepo hosting sovereign Linux distributions, GitHub extensions, and host virtualization engines.",
+  "description": "Enterprise foundation monorepo hosting sovereign Linux distributions, GitHub extensions, machine identities, and host virtualization engines.",
   "author": "Tupynambá Lucas Varela Rodrigues <tupynambalucas.dev>",
   "license": "Apache-2.0",
   "homepage": "https://docs.tupynambalucas.dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tupynambalucas-dev/workstation.git"
+    "url": "git+https://github.com/tupynambalucas-dev/foundation.git"
   },
   "type": "module",
   "packageManager": "pnpm@12.6.0",

@@ -1,15 +1,15 @@
-# Workstation Bounded-Context Monorepo Agent Context Router
+# Foundation Bounded-Context Monorepo Agent Context Router
 
-This document serves as the Layer-1 root context router for AI agents operating inside `tupynambalucas-dev/workstation`, the enterprise developer workstation monorepo hosting WSL2 custom distributions (`distributions/`), the developer toolchain & GitHub CLI extension suite (`tools/`), and Windows host virtualization governance (`virtualization/`).
+This document serves as the Layer-1 root context router for AI agents operating inside `tupynambalucas-dev/foundation`, the enterprise foundation monorepo hosting WSL2 custom distributions (`distributions/`), developer toolchain & GitHub CLI extension suite (`tools/`), machine identities and Token Broker (`identity/`), and Windows host virtualization governance (`virtualization/`).
 
 When operating within the `org-core` umbrella workspace, also inherit root organizational policies from [`../AGENTS.md`](../AGENTS.md).
 
 ## Architectural Boundaries & Core Principles
 
-- **Repository Slug**: `tupynambalucas-dev/workstation`
+- **Repository Slug**: `tupynambalucas-dev/foundation`
 - **Monorepo Workspace Orchestrator**: Root [`package.json`](./package.json), [`pnpm-workspace.yaml`](./pnpm-workspace.yaml), and [`turbo.json`](./turbo.json) driving unified task pipelines (`build`, `lint`, `typecheck`, `test`).
-- **Clean Root Invariant**: Language-specific CLI build manifests (`go.mod`, `go.sum`) reside strictly inside [`tools/github/extensions/gh-tl/`](./tools/github/extensions/gh-tl/go.mod).
-- **Go Module Identity**: `github.com/tupynambalucas-dev/workstation/tools/github/extensions/gh-tl`.
+- **Clean Root Invariant**: Language-specific CLI build manifests (`go.mod`, `go.sum`) reside strictly inside [`tools/github/extensions/gh-tl/`](./tools/github/extensions/gh-tl/go.mod) and [`identity/broker/`](./identity/broker/go.mod).
+- **Go Module Identity**: `github.com/tupynambalucas-dev/foundation/tools/github/extensions/gh-tl`.
 - **Root CLI Invocations**: `tl <command>` (standalone) or `gh tl <command>` (GitHub CLI precompiled extension).
 - **Engineering Principles**:
   1. **DDD & Feature-Sliced Design (FSD)**: Strict Layer-2 separation across `distributions/`, `tools/`, and `virtualization/`. Within `gh-tl`, dependencies flow unidirectionally downward (`cmd -> domains/* -> internal/*`).
@@ -29,6 +29,7 @@ When operating within the `org-core` umbrella workspace, also inherit root organ
 | **3** | **GitHub Extensions (`tools/github/`)** | [`tools/github/AGENTS.md`](./tools/github/AGENTS.md) | [`tools/github/README.md`](./tools/github/README.md) | GitHub CLI ecosystem and extension modules (`extensions/gh-tl/`). |
 | **3** | **gh-tl Extension (`tools/github/extensions/gh-tl/`)** | [`tools/github/extensions/gh-tl/AGENTS.md`](./tools/github/extensions/gh-tl/AGENTS.md) | [`tools/github/extensions/gh-tl/README.md`](./tools/github/extensions/gh-tl/README.md) | Multi-platform Go CLI (`gh tl` / `tl`): cryptographic onboarding, host readiness, and WSL distribution lifecycle. |
 | **2** | **Windows Virtualization (`virtualization/`)** | [`virtualization/AGENTS.md`](./virtualization/AGENTS.md) | [`virtualization/README.md`](./virtualization/README.md) | Zero-script `.reg` catalog registration, `%UserProfile%\.wslconfig` template, and hypervisor memory bounds. |
+| **2** | **Machine Identities & Portal (`identity/`)** | [`identity/README.md`](./identity/README.md) | [`identity/README.md`](./identity/README.md) | Multi-provider identities (GitHub, Google Cloud), Token Broker vending daemon, compliance legal assets, and Cloudflare Workers portal (`apps.tupynambalucas.dev`). |
 | **2** | **Documentation Hub (`references/`)** | [`references/AGENTS.md`](./references/AGENTS.md) | [`references/README.md`](./references/README.md) | Diataxis-structured technical documentation hub (tutorials, how-to-guides, technical reference, architecture explanation). |
 
 ## Governance Standards
