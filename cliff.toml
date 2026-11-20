@@ -1,13 +1,17 @@
 # cliff.toml - git-cliff configuration for tupynambalucas-dev/workstation
-# Authoritative Keep a Changelog + Symmetrical Taxonomy Specification
+# Authoritative Keep a Changelog + Symmetrical Taxonomy Specification (Docusaurus Format)
+
+[remote.github]
+owner = "tupynambalucas-dev"
+repo = "workstation"
 
 [changelog]
 header = """
-# Changelog
+# Changelog - tupynambalucas-dev/workstation
 
-All notable changes to the tupynambalucas-dev workstation are documented in this file.
+All notable changes to the `workstation` enterprise developer workstation monorepo will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- changelog-start -->
@@ -21,7 +25,11 @@ body = """
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group }}
     {% for commit in commits %}
-        - [{{ commit.scope | default(value="general") | upper }}] {{ commit.message | upper_first }} ([#{{ commit.remote.pr_number }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/pull/{{ commit.remote.pr_number }})) by @{{ commit.remote.pr_author }}
+        {% if commit.remote.pr_number %}\
+        - [{{ commit.message | split(pat="\n") | first | trim }} #{{ commit.remote.pr_number }}](https://github.com/tupynambalucas-dev/workstation/pull/{{ commit.remote.pr_number }})
+        {% else %}\
+        - [{{ commit.message | split(pat="\n") | first | trim }} ({{ commit.id | truncate(length=7, end="") }})](https://github.com/tupynambalucas-dev/workstation/commit/{{ commit.id }})
+        {% endif %}\
     {% endfor %}
 {% endfor %}
 """

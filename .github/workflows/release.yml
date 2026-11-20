@@ -102,6 +102,7 @@ jobs:
           args: --latest
         env:
           OUTPUT: output/RELEASE_NOTES.md
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Append Cryptographic SHA-256 Integrity Matrix
         id: notes
