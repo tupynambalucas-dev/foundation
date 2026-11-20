@@ -1,0 +1,52 @@
+# cliff.toml - git-cliff configuration for tupynambalucas-dev/workstation
+# Authoritative Keep a Changelog + Symmetrical Taxonomy Specification
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to the tupynambalucas-dev workstation are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+<!-- changelog-start -->
+"""
+body = """
+{% if version %}\
+    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+    ## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group }}
+    {% for commit in commits %}
+        - [{{ commit.scope | default(value="general") | upper }}] {{ commit.message | upper_first }} ([#{{ commit.remote.pr_number }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/pull/{{ commit.remote.pr_number }})) by @{{ commit.remote.pr_author }}
+    {% endfor %}
+{% endfor %}
+"""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+commit_parsers = [
+    { message = "^feat", group = "Features & Capabilities" },
+    { message = "^fix", group = "Bug Fixes & Corrections" },
+    { message = "^perf", group = "Performance Optimizations" },
+    { message = "^refactor", group = "Refactoring & Internal Architecture" },
+    { message = "^docs", group = "Documentation & Specifications" },
+    { message = "^security", group = "Security & Vulnerability Patches" },
+    { message = "^revert", group = "Reverts & Rollbacks" },
+    { message = "^chore\\(release\\)", skip = true },
+    { message = "^chore", skip = true },
+    { message = "^test", skip = true },
+    { message = "^ci", skip = true },
+    { message = "^style", skip = true },
+]
+protect_breaking_commits = false
+filter_commits = false
+tag_pattern = "v[0-9].*"
+topo_order = false
+sort_commits = "oldest"

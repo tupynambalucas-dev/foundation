@@ -10,81 +10,162 @@ permissions:
   id-token: write
   attestations: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  release-cli:
-    name: Precompile & Publish GitHub CLI Extension
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate CI Bot Token
-        id: app-token
-        env:
-          APP_ID: ${{ secrets.CI_BOT_APP_ID || secrets.CI_APP_ID }}
-          APP_PRIVATE_KEY: ${{ secrets.CI_BOT_APP_PRIVATE_KEY || secrets.CI_APP_PRIVATE_KEY }}
-        if: ${{ env.APP_ID != '' && env.APP_PRIVATE_KEY != '' }}
-        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
-        with:
-          app-id: ${{ env.APP_ID }}
-          private-key: ${{ env.APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Precompile CLI Extension Binaries
-        uses: cli/gh-extension-precompile@v2
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
-        with:
-          generate_attestations: true
-          go_version_file: tools/github/extensions/gh-tl/go.mod
-          go_build_options: "./cmd/tl"
-
-  release-distros:
-    name: Build & Publish WSL2 Custom Distributions (.wsl)
-    needs: release-cli
+  test-and-lint:
+    name: Release Gate: Verification & Quality Checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup pnpm Environment
+        uses: ./.github/actions/setup-pnpm-env
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Turborepo lint and typecheck
+        run: |
+          pnpm lint
+          pnpm typecheck
+
+      - name: Setup Go Environment
+        uses: ./.github/actions/setup-go-env
+
+      - name: Run Go tests
+        working-directory: tools/github/extensions/gh-tl
+        run: |
+          go vet ./...
+          go test -race ./...
+
+      - name: Validate distribution manifests and scripts
+        run: |
+          jq empty distributions/catalog/DistributionInfo.json
+          jq empty distributions/base/assets/terminal-profile.json
+          jq empty distributions/cluster/assets/terminal-profile.json
+          shellcheck distributions/shared/oobe-common.sh \
+                     distributions/shared/systemd-mask.sh \
+                     distributions/base/etc/oobe.sh \
+                     distributions/cluster/etc/oobe.sh
+
+  build-and-package:
+    name: Build Binaries, Packages & Generate Release Notes
+    needs: test-and-lint
+    runs-on: ubuntu-latest
+    outputs:
+      release-notes: ${{ steps.notes.outputs.body }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
 
-      - name: Build Base Distribution Image (tupynambalucas-dev)
-        run: |
-          mkdir -p output
-          docker buildx build -f distributions/base/Dockerfile -t tupynambalucas-dev-base:latest --load .
-          docker buildx build -f distributions/base/Dockerfile --target rootfs --output type=tar,dest=output/tupynambalucas-dev.tar .
-          gzip -9 -f output/tupynambalucas-dev.tar
-          mv output/tupynambalucas-dev.tar.gz output/tupynambalucas-dev.wsl
+      - name: Build Base Image & Package Rootfs
+        id: pkg-base
+        uses: ./.github/actions/package-wsl-distro
+        with:
+          distro-name: "tupynambalucas-dev"
+          dockerfile-path: "distributions/base/Dockerfile"
+          output-dir: "output"
 
-      - name: Build Cluster Distribution Image (tupynambalucas-dev-cluster)
-        run: |
-          docker buildx build -f distributions/cluster/Dockerfile \
-            --build-arg BASE_IMAGE=tupynambalucas-dev-base:latest \
-            --target rootfs \
-            --output type=tar,dest=output/tupynambalucas-dev-cluster.tar .
-          gzip -9 -f output/tupynambalucas-dev-cluster.tar
-          mv output/tupynambalucas-dev-cluster.tar.gz output/tupynambalucas-dev-cluster.wsl
+      - name: Build Cluster Image & Package Rootfs
+        id: pkg-cluster
+        uses: ./.github/actions/package-wsl-distro
+        with:
+          distro-name: "tupynambalucas-dev-cluster"
+          dockerfile-path: "distributions/cluster/Dockerfile"
+          build-args: "--build-arg BASE_IMAGE=tupynambalucas-dev-base:latest"
+          output-dir: "output"
 
-      - name: Compute SHA-256 Hashes & Stamp DistributionInfo.json
+      - name: Stamp DistributionInfo.json with SHA-256 Hashes
         run: |
-          BASE_SHA="0x$(sha256sum output/tupynambalucas-dev.wsl | awk '{print $1}')"
-          CLUSTER_SHA="0x$(sha256sum output/tupynambalucas-dev-cluster.wsl | awk '{print $1}')"
+          BASE_SHA="${{ steps.pkg-base.outputs.sha256-digest }}"
+          CLUSTER_SHA="${{ steps.pkg-cluster.outputs.sha256-digest }}"
           jq --arg base_sha "$BASE_SHA" --arg cluster_sha "$CLUSTER_SHA" \
             '.ModernDistributions["tupynambalucas-dev"][0].Amd64Url.Sha256 = $base_sha |
              .ModernDistributions["tupynambalucas-dev-cluster"][0].Amd64Url.Sha256 = $cluster_sha' \
             distributions/catalog/DistributionInfo.json > output/DistributionInfo.json
           cp virtualization/registry/tupynambalucas-dev.reg output/tupynambalucas-dev.reg
 
-      - name: Upload WSL2 Distribution Assets to GitHub Release
+      - name: Generate Release Notes via git-cliff
+        id: cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest
+        env:
+          OUTPUT: output/RELEASE_NOTES.md
+
+      - name: Append Cryptographic SHA-256 Integrity Matrix
+        id: notes
+        run: |
+          BASE_SHA="${{ steps.pkg-base.outputs.sha256-digest }}"
+          CLUSTER_SHA="${{ steps.pkg-cluster.outputs.sha256-digest }}"
+          cat << 'EOF' >> output/RELEASE_NOTES.md
+
+          ---
+
+          ### Cryptographic Artifact Digest Matrix (SHA-256)
+
+          | Artifact Asset | Cryptographic Digest (0x prefix) |
+          | :--- | :--- |
+          | `tupynambalucas-dev.wsl` | `'$BASE_SHA'` |
+          | `tupynambalucas-dev-cluster.wsl` | `'$CLUSTER_SHA'` |
+
+          ---
+
+          ### Host Installation & Automated Onboarding Runbook
+
+          ```powershell
+          # 1. Install or update the GitHub CLI extension
+          gh extension install tupynambalucas-dev/workstation
+
+          # 2. Automated Host Day-0 Governance (Registry, .wslconfig & Terminal Staging)
+          gh tl host prepare
+
+          # 3. Stream & Initialize Sovereign WSL2 Developer Instance
+          gh tl distro install tupynambalucas-dev
+          ```
+          EOF
+
+      - name: Upload Distribution Artifacts
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: distribution-artifacts
+          path: output/
+          retention-days: 1
+
+  publish-release:
+    name: Atomic Release Publication & Asset Upload
+    needs: build-and-package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Download Distribution Artifacts
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        with:
+          name: distribution-artifacts
+          path: output/
+
+      - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${GITHUB_REF_NAME}" \
+          gh release create "${GITHUB_REF_NAME}" \
             output/tupynambalucas-dev.wsl \
             output/tupynambalucas-dev-cluster.wsl \
             output/DistributionInfo.json \
             output/tupynambalucas-dev.reg \
-            --clobber
+            --title "Workstation ${GITHUB_REF_NAME}" \
+            --notes-file output/RELEASE_NOTES.md \
+            --verify-tag
