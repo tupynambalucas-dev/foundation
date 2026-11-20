@@ -1,14 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tupynambalucas-apps-portal",
-  "main": "src/index.ts",
+  "main": "src/worker.ts",
   "compatibility_date": "2026-11-20",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "assets": {
-    "directory": "./public",
+    "directory": "./dist",
     "binding": "ASSETS",
-    "not_found_handling": "404-page",
+    "not_found_handling": "single-page-application",
     "run_worker_first": true
   },
   "routes": [

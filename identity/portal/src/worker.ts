@@ -4,8 +4,8 @@ export interface Env {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    // Cloudflare Workers Static Assets automatically resolves clean URLs,
-    // directory index files (e.g. /rclone -> /rclone/index.html), and 404-page handling.
+    // Cloudflare Workers Static Assets engine serves compiled Vite assets from dist/
+    // and falls back to dist/index.html for SPA client-side routes
     const response = await env.ASSETS.fetch(request);
 
     // Apply enterprise security headers on all responses

@@ -32,6 +32,9 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build Identity Portal (React + Vite)
+        run: pnpm --filter @tupynambalucas-dev/identity-portal build
+
       - name: Deploy Portal via Wrangler Action
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
