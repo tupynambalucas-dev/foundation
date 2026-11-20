@@ -1,6 +1,7 @@
 package onboard
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -137,7 +138,11 @@ func RunSetup() error {
 		authTitle := fmt.Sprintf("[%s Auth] %s", flagOrg, hostname)
 		createdAuth, errAuth := github.RegisterAuthKey(authTitle, pubKeyContent)
 		if errAuth != nil {
-			ui.PrintWarn(fmt.Sprintf("Failed registering auth key: %v", errAuth))
+			if errors.Is(errAuth, github.ErrFineGrainedPAT) {
+				ui.PrintWarn("Authentication key upload skipped: Fine-Grained Personal Access Token cannot manage SSH keys via API")
+			} else {
+				ui.PrintWarn(fmt.Sprintf("Failed registering auth key: %v", errAuth))
+			}
 		} else if createdAuth {
 			ui.PrintPass(fmt.Sprintf("Authentication key registered: '%s'", authTitle))
 		} else {
@@ -147,7 +152,13 @@ func RunSetup() error {
 		signTitle := fmt.Sprintf("[%s Sign] %s", flagOrg, hostname)
 		createdSign, errSign := github.RegisterSigningKey(signTitle, pubKeyContent)
 		if errSign != nil {
-			ui.PrintWarn(fmt.Sprintf("Failed registering signing key: %v", errSign))
+			if errors.Is(errSign, github.ErrFineGrainedPAT) {
+				ui.PrintWarn("Signing key upload skipped: Fine-Grained Personal Access Token cannot manage SSH keys via API")
+				ui.PrintInfo("Remediation Option 1 (Automated): Run 'gh auth login --web -s admin:public_key,admin:ssh_signing_key' and rerun 'gh tl onboard'")
+				ui.PrintInfo(fmt.Sprintf("Remediation Option 2 (Manual): Register public key at https://github.com/settings/keys as a Signing Key"))
+			} else {
+				ui.PrintWarn(fmt.Sprintf("Failed registering signing key: %v", errSign))
+			}
 		} else if createdSign {
 			ui.PrintPass(fmt.Sprintf("Signing key registered: '%s'", signTitle))
 		} else {
