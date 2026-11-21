@@ -1,15 +1,15 @@
-# cliff.toml - git-cliff configuration for tupynambalucas-dev/workstation
+# cliff.toml - git-cliff configuration for tupynambalucas-dev/foundation
 # Authoritative Keep a Changelog + Symmetrical Taxonomy Specification (Docusaurus Format)
 
 [remote.github]
 owner = "tupynambalucas-dev"
-repo = "workstation"
+repo = "foundation"
 
 [changelog]
 header = """
-# Changelog - tupynambalucas-dev/workstation
+# Changelog - tupynambalucas-dev/foundation
 
-All notable changes to the `workstation` enterprise developer workstation monorepo will be documented in this file.
+All notable changes to the `foundation` sovereign foundation monorepo will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -25,11 +25,13 @@ body = """
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group }}
     {% for commit in commits %}
-        {% if commit.remote.pr_number %}\
-        - [{{ commit.message | split(pat="\n") | first | trim }} #{{ commit.remote.pr_number }}](https://github.com/tupynambalucas-dev/workstation/pull/{{ commit.remote.pr_number }}){% if commit.remote.username %} ([@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }})){% endif %}
-        {% else %}\
-        - [{{ commit.message | split(pat="\n") | first | trim }} ({{ commit.id | truncate(length=7, end="") }})](https://github.com/tupynambalucas-dev/workstation/commit/{{ commit.id }}){% if commit.remote.username %} ([@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }})){% endif %}
-        {% endif %}\
+        {%- set raw_first = commit.raw_message | split(pat="\n") | first | trim -%}
+        {%- if commit.remote.pr_number -%}
+            {%- set clean_msg = raw_first | replace(from=" (#" ~ commit.remote.pr_number ~ ")", to="") -%}
+        - [{{ clean_msg }} #{{ commit.remote.pr_number }}](https://github.com/tupynambalucas-dev/foundation/pull/{{ commit.remote.pr_number }}){% if commit.remote.username %} ([@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }})){% endif %}
+        {%- else -%}
+        - [{{ raw_first }} ({{ commit.id | truncate(length=7, end="") }})](https://github.com/tupynambalucas-dev/foundation/commit/{{ commit.id }}){% if commit.remote.username %} ([@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }})){% endif %}
+        {%- endif %}
     {% endfor %}
 {% endfor %}
 """
@@ -52,6 +54,7 @@ commit_parsers = [
     { message = "^test", skip = true },
     { message = "^ci", skip = true },
     { message = "^style", skip = true },
+    { message = "^build", skip = true },
 ]
 protect_breaking_commits = false
 filter_commits = false
