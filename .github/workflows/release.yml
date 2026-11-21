@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   test-and-lint:
-    name: Release Gate: Verification & Quality Checks
+    name: "Release Gate: Verification & Quality Checks"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
