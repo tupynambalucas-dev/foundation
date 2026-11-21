@@ -1,7 +1,7 @@
 {
-  "name": "tupynambalucas-ci-bot",
+  "name": "tupynambalucas-automation",
   "url": "https://apps.tupynambalucas.dev",
-  "description": "Autonomous CI/CD and repository automation bot for tupynambalucas-dev.",
+  "description": "Autonomous CI/CD, continuous delivery, and repository automation identity for tupynambalucas-dev.",
   "hook_attributes": {
     "url": "https://apps.tupynambalucas.dev/webhooks/github",
     "active": false

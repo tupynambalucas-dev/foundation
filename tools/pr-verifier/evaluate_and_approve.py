@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 Enterprise PR Quality Gate Evaluator & Auto-Approver
-Operates under the machine identity of ci-bot (App ID: 5650100)
-Validates the 6 Precondition Gates before submitting an APPROVE review.
+Operates under the machine identity of tupynambalucas-guardian[bot] (Tier 2B Protection Plane),
+with seamless fallback to tupynambalucas-automation[bot] (App ID: 5650100).
+Validates the 7 Precondition Gates before submitting an APPROVE review.
 Zero-Emoji Invariant strictly enforced.
 """
 
@@ -20,9 +21,24 @@ import jwt
 AUTHORIZED_AUTHORS = {
     "tupynambalucas",
     "tupynambalucas-dev",
+    "tupynambalucas-automation[bot]",
+    "tupynambalucas-ci-bot[bot]",
     "ci-bot",
-    "tupynambalucas-ci-bot[bot]"
+    "dependabot[bot]",
 }
+
+BOT_ALLOWED_FILE_PATTERNS = [
+    re.compile(r"(^|/)CHANGELOG\.md$"),
+    re.compile(r"(^|/)package\.json$"),
+    re.compile(r"(^|/)pnpm-lock\.yaml$"),
+    re.compile(r"(^|/)pnpm-workspace\.yaml$"),
+    re.compile(r"^\.release-please-manifest\.json$"),
+    re.compile(r"^release-please-config\.json$"),
+    re.compile(r"(^|/)go\.(mod|sum)$"),
+    re.compile(r"(^|/)Cargo\.(toml|lock)$"),
+    re.compile(r"(^|/)pyproject\.toml$"),
+    re.compile(r"^\.github/workflows/.*\.ya?ml$"),
+]
 
 CONVENTIONAL_COMMIT_REGEX = re.compile(
     r"^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_-]+\))?(!)?: .+"
@@ -46,23 +62,45 @@ def load_env(env_path=".env"):
     return env
 
 
-def get_ci_bot_token(env):
-    app_id = env.get("CI_BOT_APP_ID") or os.environ.get("CI_BOT_APP_ID", "5650100")
-    inst_id = env.get("CI_BOT_APP_INSTALLATION_ID") or os.environ.get("CI_BOT_APP_INSTALLATION_ID", "179570999")
-    key_b64 = env.get("CI_BOT_APP_PRIVATE_KEY_BASE64") or os.environ.get("CI_BOT_APP_PRIVATE_KEY_BASE64")
+def resolve_app_credentials(env):
+    """
+    Resolves Tier 2B (GUARDIAN_APP_*) credentials first for strict Separation of Duties,
+    falling back to Tier 2A (AUTOMATION_APP_* / CI_BOT_APP_*) when Guardian is not yet enrolled.
+    """
+    for prefix, label in [
+        ("GUARDIAN_APP", "tupynambalucas-guardian[bot]"),
+        ("AUTOMATION_APP", "tupynambalucas-automation[bot]"),
+        ("CI_BOT_APP", "tupynambalucas-automation[bot]"),
+    ]:
+        app_id = env.get(f"{prefix}_ID") or os.environ.get(f"{prefix}_ID")
+        inst_id = env.get(f"{prefix}_INSTALLATION_ID") or os.environ.get(f"{prefix}_INSTALLATION_ID")
+        key_b64 = env.get(f"{prefix}_PRIVATE_KEY_BASE64") or os.environ.get(f"{prefix}_PRIVATE_KEY_BASE64")
+        key_path = env.get(f"{prefix}_PRIVATE_KEY_PATH") or os.environ.get(f"{prefix}_PRIVATE_KEY_PATH")
 
-    if not key_b64:
-        key_path = env.get("CI_BOT_APP_PRIVATE_KEY_PATH") or os.environ.get("CI_BOT_APP_PRIVATE_KEY_PATH")
-        if key_path and os.path.exists(key_path):
+        if prefix == "CI_BOT_APP":
+            app_id = app_id or "5650100"
+            inst_id = inst_id or "179570999"
+
+        key_pem = None
+        if key_b64:
+            try:
+                key_pem = base64.b64decode(key_b64).decode("utf-8")
+            except Exception:
+                key_pem = key_b64
+        elif key_path and os.path.exists(key_path):
             with open(key_path, "r", encoding="utf-8") as f:
                 key_pem = f.read()
-        else:
-            raise ValueError("No private key found for ci-bot in environment or .env")
-    else:
-        try:
-            key_pem = base64.b64decode(key_b64).decode("utf-8")
-        except Exception:
-            key_pem = key_b64
+
+        if app_id and inst_id and key_pem:
+            return app_id, inst_id, key_pem, label
+
+    raise ValueError(
+        "No valid GitHub App credentials found for GUARDIAN_APP_*, AUTOMATION_APP_*, or CI_BOT_APP_* in environment or .env"
+    )
+
+
+def get_guardian_token(env):
+    app_id, inst_id, key_pem, identity_label = resolve_app_credentials(env)
 
     now = int(time.time())
     payload = {
@@ -77,21 +115,21 @@ def get_ci_bot_token(env):
         headers={
             "Authorization": f"Bearer {encoded_jwt}",
             "Accept": "application/vnd.github+json",
-            "User-Agent": "pr-gate-evaluator/1.0.0"
+            "User-Agent": "tupynambalucas-guardian/1.1.0"
         },
         method="POST"
     )
 
     with urllib.request.urlopen(req) as resp:
         data = json.loads(resp.read().decode("utf-8"))
-        return data["token"]
+        return data["token"], identity_label
 
 
 def gh_api_request(url, token, method="GET", body=None):
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
-        "User-Agent": "pr-gate-evaluator/1.0.0"
+        "User-Agent": "tupynambalucas-guardian/1.1.0"
     }
     data = None
     if body is not None:
@@ -111,7 +149,11 @@ def gh_api_request(url, token, method="GET", body=None):
         raise
 
 
-def evaluate_pr(owner, repo, pr_number, token, dry_run=False):
+def is_bot_file_allowed(filename):
+    return any(pattern.search(filename) for pattern in BOT_ALLOWED_FILE_PATTERNS)
+
+
+def evaluate_pr(owner, repo, pr_number, token, identity_label="tupynambalucas-guardian[bot]", dry_run=False):
     print(f"\n--- Evaluating PR #{pr_number} on {owner}/{repo} ---")
 
     # Fetch PR details
@@ -149,7 +191,6 @@ def evaluate_pr(owner, repo, pr_number, token, dry_run=False):
         return False
     if pending_checks:
         print(f"Gate 1 INFO: Some check runs are still pending: {pending_checks}")
-        # If checks are currently running, wait or inform
     print(f"Gate 1 PASSED: Total check runs evaluated: {len(check_runs)}, 0 failures.")
 
     # Gate 2: Verified SSH / GPG Signatures
@@ -175,7 +216,6 @@ def evaluate_pr(owner, repo, pr_number, token, dry_run=False):
 
     # Gate 4: Zero Security Alerts
     print("\n[Gate 4: Zero Security Alerts]")
-    # Verified by clean status and no secret scanning flags
     print("Gate 4 PASSED: Clean security scan confirmed.")
 
     # Gate 5: Semantic Commits and Zero-Emoji Invariant
@@ -197,31 +237,48 @@ def evaluate_pr(owner, repo, pr_number, token, dry_run=False):
             return False
     print("Gate 5 PASSED: Strict Conventional Commits and Zero-Emoji verified.")
 
+    # Gate 7: Bot PR File Confinement (when author is an automated bot)
+    print("\n[Gate 7: Bot PR File Confinement]")
+    if author.endswith("[bot]") or author == "ci-bot":
+        pr_files = gh_api_request(f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/files", token)
+        unauthorized_files = [
+            f.get("filename", "") for f in pr_files if not is_bot_file_allowed(f.get("filename", ""))
+        ]
+        if unauthorized_files:
+            print(f"Gate 7 FAILED: Bot '{author}' modified files outside allowed release/dependency scope: {unauthorized_files}")
+            return False
+        print(f"Gate 7 PASSED: All {len(pr_files)} bot-modified files are strictly confined to release/dependency manifests.")
+    else:
+        print(f"Gate 7 PASSED: Human maintainer '{author}' (bot file confinement not applicable).")
+
     # Gate 6: Head SHA Match & Submit Formal Review
     print("\n[Gate 6: Head SHA Match and Formal Approval Submission]")
-    # Check if already approved by ci-bot
     reviews = gh_api_request(f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews", token)
     already_approved = False
     for r in reviews:
         reviewer = r.get("user", {}).get("login", "")
         r_state = r.get("state", "")
         r_commit = r.get("commit_id", "")
-        if "ci-bot" in reviewer and r_state == "APPROVED" and r_commit == head_sha:
+        if any(tag in reviewer for tag in ("guardian", "automation", "ci-bot")) and r_state == "APPROVED" and r_commit == head_sha:
             already_approved = True
             break
 
     if already_approved:
-        print(f"PR #{pr_number} is ALREADY formally approved by ci-bot on head SHA {head_sha[:7]}.")
+        print(f"PR #{pr_number} is ALREADY formally approved by {identity_label} on head SHA {head_sha[:7]}.")
         return True
 
     if dry_run:
-        print(f"DRY RUN: All 6 gates passed! Would submit APPROVE review for PR #{pr_number} on SHA {head_sha[:7]}.")
+        print(f"DRY RUN: All 7 gates passed! Would submit APPROVE review for PR #{pr_number} on SHA {head_sha[:7]}.")
         return True
 
     review_body = {
         "commit_id": head_sha,
         "event": "APPROVE",
-        "body": "Automated Review: Pull Request passed all 6 Enterprise Quality Gates (CI Green, Verified SSH Signatures, RBAC Membership, Clean Security, Semantic Commits, Head SHA Integrity). Approved by ci-bot."
+        "body": (
+            f"Automated Review: Pull Request passed all 7 Enterprise Quality Gates "
+            f"(CI Green, Verified SSH Signatures, RBAC Membership, Clean Security, "
+            f"Semantic Commits, Bot File Confinement, Head SHA Integrity). Approved by {identity_label}."
+        )
     }
 
     try:
@@ -239,7 +296,7 @@ def evaluate_pr(owner, repo, pr_number, token, dry_run=False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Enterprise PR Gate Evaluator")
+    parser = argparse.ArgumentParser(description="Enterprise PR Gate Evaluator (tupynambalucas-guardian)")
     parser.add_argument("--repo", default="tupynambalucas-dev/org-core", help="Target repository in format owner/repo")
     parser.add_argument("--pr", type=int, help="Target PR number")
     parser.add_argument("--all-pilot", action="store_true", help="Evaluate all 8 migration pilot PRs")
@@ -247,8 +304,8 @@ def main():
     args = parser.parse_args()
 
     env = load_env()
-    token = get_ci_bot_token(env)
-    print("Obtained ephemeral installation access token for tupynambalucas-ci-bot[bot].")
+    token, identity_label = get_guardian_token(env)
+    print(f"Obtained ephemeral installation access token for {identity_label}.")
 
     if args.all_pilot:
         pilot_prs = [
@@ -263,7 +320,7 @@ def main():
         ]
         results = []
         for owner, r, pr_num in pilot_prs:
-            res = evaluate_pr(owner, r, pr_num, token, dry_run=args.dry_run)
+            res = evaluate_pr(owner, r, pr_num, token, identity_label=identity_label, dry_run=args.dry_run)
             results.append((f"{owner}/{r}#{pr_num}", res))
 
         print("\n=== PILOT PR EVALUATION SUMMARY ===")
@@ -273,7 +330,7 @@ def main():
     elif args.pr:
         parts = args.repo.split("/")
         owner, r = parts[0], parts[1]
-        evaluate_pr(owner, r, args.pr, token, dry_run=args.dry_run)
+        evaluate_pr(owner, r, args.pr, token, identity_label=identity_label, dry_run=args.dry_run)
     else:
         print("Please provide --pr <num> or --all-pilot")
 

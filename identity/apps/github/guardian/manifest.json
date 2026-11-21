@@ -1,0 +1,27 @@
+{
+  "name": "tupynambalucas-guardian",
+  "url": "https://apps.tupynambalucas.dev",
+  "description": "Autonomous policy enforcement, security compliance auditing, and Pull Request quality gate guardian for tupynambalucas-dev.",
+  "hook_attributes": {
+    "url": "https://apps.tupynambalucas.dev/webhooks/github",
+    "active": false
+  },
+  "redirect_url": "http://localhost:3333/callback",
+  "public": false,
+  "default_permissions": {
+    "checks": "read",
+    "contents": "read",
+    "issues": "write",
+    "metadata": "read",
+    "pull_requests": "write",
+    "security_events": "read",
+    "statuses": "read",
+    "vulnerability_alerts": "read"
+  },
+  "default_events": [
+    "pull_request",
+    "pull_request_review",
+    "check_suite",
+    "check_run"
+  ]
+}

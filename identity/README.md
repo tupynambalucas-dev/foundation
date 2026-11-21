@@ -5,7 +5,7 @@ This bounded context consolidates sovereign machine identity governance, automat
 ## Subsystems
 
 - **`compliance/`**: Corporate privacy policies and terms of service satisfying Google OAuth Brand Verification and API Services User Data Policy.
-- **`apps/github/`**: Declarative manifests for the 3-Tier GitHub Apps architecture (`org-manager`, `ci-bot`, `developer-tools`).
+- **`apps/github/`**: Declarative manifests for the 4-App GitHub Machine Identity architecture (`org-manager`, `automation`, `guardian`, `developer-tools`).
 - **`apps/gcloud/`**: Google Cloud OAuth and Service Account specifications (`drive-rclone`, `workspace-automation`).
 - **`portal/`**: Cloudflare Workers with Static Assets serverless application serving `https://apps.tupynambalucas.dev`.
 - **`broker/`**: Token Broker vending machine daemon issuing short-lived, least-privilege GitHub installation tokens.
