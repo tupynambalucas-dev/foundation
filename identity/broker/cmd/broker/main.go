@@ -25,6 +25,7 @@ import (
 // Policy defines the permissions granted to a specific subject (caller identity).
 type Policy struct {
 	Subject             string            `yaml:"subject" json:"subject"`
+	App                 string            `yaml:"app,omitempty" json:"app,omitempty"`
 	AllowedRepositories []string          `yaml:"allowed_repositories" json:"allowed_repositories"`
 	AllowedPermissions  map[string]string `yaml:"allowed_permissions" json:"allowed_permissions"`
 }
@@ -46,11 +47,19 @@ type TokenResponse struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
+// AppCredentials stores the cryptographic identity for a specific GitHub App tier.
+type AppCredentials struct {
+	AppID          string
+	InstallationID string
+	PrivateKey     *rsa.PrivateKey
+}
+
 // Broker holds configuration and cryptographic keys for token vending.
 type Broker struct {
 	appID          string
 	installationID string
 	privateKey     *rsa.PrivateKey
+	apps           map[string]AppCredentials
 	policies       map[string]Policy
 	mu             sync.RWMutex
 	httpClient     *http.Client
@@ -83,9 +92,9 @@ func LoadPrivateKey(pemBytes []byte) (*rsa.PrivateKey, error) {
 	return nil, fmt.Errorf("could not parse private key as PKCS#1 or PKCS#8: %w", err)
 }
 
-// GenerateJWT creates a signed RS256 JWT valid for 5 minutes as required by GitHub API.
-func (b *Broker) GenerateJWT() (string, error) {
-	if b.privateKey == nil {
+// GenerateJWTForApp creates a signed RS256 JWT valid for 5 minutes for the specified app credentials.
+func GenerateJWTForApp(appID string, privateKey *rsa.PrivateKey) (string, error) {
+	if privateKey == nil {
 		return "", fmt.Errorf("private key is not initialized")
 	}
 
@@ -102,7 +111,7 @@ func (b *Broker) GenerateJWT() (string, error) {
 	claims := map[string]interface{}{
 		"iat": now - 60,       // 60s clock skew tolerance
 		"exp": now + (5 * 60), // Valid for 5 minutes
-		"iss": b.appID,
+		"iss": appID,
 	}
 	claimsJSON, err := json.Marshal(claims)
 	if err != nil {
@@ -114,13 +123,35 @@ func (b *Broker) GenerateJWT() (string, error) {
 	signingInput := encodedHeader + "." + encodedClaims
 
 	hashed := sha256.Sum256([]byte(signingInput))
-	signature, err := rsa.SignPKCS1v15(rand.Reader, b.privateKey, crypto.SHA256, hashed[:])
+	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed[:])
 	if err != nil {
 		return "", fmt.Errorf("failed to sign JWT: %w", err)
 	}
 
 	encodedSignature := base64.RawURLEncoding.EncodeToString(signature)
 	return signingInput + "." + encodedSignature, nil
+}
+
+// GenerateJWT creates a signed RS256 JWT using the broker's default credentials.
+func (b *Broker) GenerateJWT() (string, error) {
+	return GenerateJWTForApp(b.appID, b.privateKey)
+}
+
+// ResolveAppCredentials returns the AppCredentials for a policy's designated app tier, falling back to default credentials.
+func (b *Broker) ResolveAppCredentials(appSlug string) (AppCredentials, error) {
+	if appSlug != "" && b.apps != nil {
+		if creds, ok := b.apps[appSlug]; ok && creds.AppID != "" && creds.InstallationID != "" && creds.PrivateKey != nil {
+			return creds, nil
+		}
+	}
+	if b.appID != "" && b.installationID != "" && b.privateKey != nil {
+		return AppCredentials{
+			AppID:          b.appID,
+			InstallationID: b.installationID,
+			PrivateKey:     b.privateKey,
+		}, nil
+	}
+	return AppCredentials{}, fmt.Errorf("credentials not initialized for app tier %q", appSlug)
 }
 
 // GitHubOIDCTokenClaims represents claims extracted from a GitHub Actions ID token JWT.
@@ -235,14 +266,25 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtToken, err := b.GenerateJWT()
+	b.mu.RLock()
+	policy := b.policies[subject]
+	b.mu.RUnlock()
+
+	creds, err := b.ResolveAppCredentials(policy.App)
+	if err != nil {
+		log.Printf("[ERROR] Failed to resolve credentials for subject=%q app=%q: %v", subject, policy.App, err)
+		http.Error(w, "Internal server error resolving machine identity credentials", http.StatusInternalServerError)
+		return
+	}
+
+	jwtToken, err := GenerateJWTForApp(creds.AppID, creds.PrivateKey)
 	if err != nil {
 		log.Printf("[ERROR] Failed to generate JWT: %v", err)
 		http.Error(w, "Internal server error generating authentication token", http.StatusInternalServerError)
 		return
 	}
 
-	githubURL := fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", b.installationID)
+	githubURL := fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", creds.InstallationID)
 	reqBody, _ := json.Marshal(req)
 
 	ghReq, err := http.NewRequestWithContext(r.Context(), "POST", githubURL, bytes.NewReader(reqBody))
@@ -280,8 +322,8 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("[AUDIT-ISSUED] subject=%q repositories=%v permissions=%v expires_at=%s",
-		subject, req.Repositories, req.Permissions, ghResult.ExpiresAt.Format(time.RFC3339))
+	log.Printf("[AUDIT-ISSUED] subject=%q app=%q repositories=%v permissions=%v expires_at=%s",
+		subject, policy.App, req.Repositories, req.Permissions, ghResult.ExpiresAt.Format(time.RFC3339))
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(TokenResponse{
@@ -290,25 +332,61 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func main() {
-	appID := os.Getenv("GITHUB_APP_ID")
-	installationID := os.Getenv("GITHUB_INSTALLATION_ID")
-	privateKeyRaw := os.Getenv("GITHUB_PRIVATE_KEY")
-	privateKeyPath := os.Getenv("GITHUB_PRIVATE_KEY_PATH")
-	policiesPath := os.Getenv("POLICIES_PATH")
+func loadAppCredentialsFromEnv(prefix string, fallbackPrefix string) AppCredentials {
+	appID := os.Getenv(prefix + "_APP_ID")
+	if appID == "" && fallbackPrefix != "" {
+		appID = os.Getenv(fallbackPrefix + "_APP_ID")
+	}
 
-	if policiesPath == "" {
-		policiesPath = "config/policies.yaml"
+	instID := os.Getenv(prefix + "_APP_INSTALLATION_ID")
+	if instID == "" {
+		instID = os.Getenv(prefix + "_INSTALLATION_ID")
+	}
+	if instID == "" && fallbackPrefix != "" {
+		instID = os.Getenv(fallbackPrefix + "_APP_INSTALLATION_ID")
+		if instID == "" {
+			instID = os.Getenv(fallbackPrefix + "_INSTALLATION_ID")
+		}
+	}
+
+	keyRaw := os.Getenv(prefix + "_APP_PRIVATE_KEY")
+	if keyRaw == "" {
+		keyRaw = os.Getenv(prefix + "_PRIVATE_KEY")
+	}
+	keyB64 := os.Getenv(prefix + "_APP_PRIVATE_KEY_BASE64")
+	keyPath := os.Getenv(prefix + "_APP_PRIVATE_KEY_PATH")
+	if keyPath == "" {
+		keyPath = os.Getenv(prefix + "_PRIVATE_KEY_PATH")
+	}
+
+	if keyRaw == "" && keyB64 == "" && keyPath == "" && fallbackPrefix != "" {
+		keyRaw = os.Getenv(fallbackPrefix + "_APP_PRIVATE_KEY")
+		if keyRaw == "" {
+			keyRaw = os.Getenv(fallbackPrefix + "_PRIVATE_KEY")
+		}
+		keyB64 = os.Getenv(fallbackPrefix + "_APP_PRIVATE_KEY_BASE64")
+		keyPath = os.Getenv(fallbackPrefix + "_APP_PRIVATE_KEY_PATH")
+		if keyPath == "" {
+			keyPath = os.Getenv(fallbackPrefix + "_PRIVATE_KEY_PATH")
+		}
 	}
 
 	var pemBytes []byte
-	if privateKeyRaw != "" {
-		pemBytes = []byte(privateKeyRaw)
-	} else if privateKeyPath != "" {
-		var err error
-		pemBytes, err = os.ReadFile(privateKeyPath)
+	if keyB64 != "" {
+		decoded, err := base64.StdEncoding.DecodeString(strings.TrimSpace(keyB64))
+		if err == nil {
+			pemBytes = decoded
+		} else {
+			pemBytes = []byte(keyB64)
+		}
+	} else if keyRaw != "" {
+		pemBytes = []byte(keyRaw)
+	} else if keyPath != "" {
+		data, err := os.ReadFile(keyPath)
 		if err != nil {
-			log.Fatalf("Failed to read private key file %s: %v", privateKeyPath, err)
+			log.Printf("[WARN] Failed to read private key file %s: %v", keyPath, err)
+		} else {
+			pemBytes = data
 		}
 	}
 
@@ -317,8 +395,29 @@ func main() {
 		var err error
 		rsaKey, err = LoadPrivateKey(pemBytes)
 		if err != nil {
-			log.Fatalf("Failed to parse RSA private key: %v", err)
+			log.Printf("[WARN] Failed to parse RSA private key for prefix %s: %v", prefix, err)
 		}
+	}
+
+	return AppCredentials{
+		AppID:          appID,
+		InstallationID: instID,
+		PrivateKey:     rsaKey,
+	}
+}
+
+func main() {
+	defaultCreds := loadAppCredentialsFromEnv("GITHUB", "AUTOMATION")
+	automationCreds := loadAppCredentialsFromEnv("AUTOMATION", "CI_BOT")
+	guardianCreds := loadAppCredentialsFromEnv("GUARDIAN", "AUTOMATION")
+
+	if defaultCreds.AppID == "" {
+		defaultCreds = automationCreds
+	}
+
+	policiesPath := os.Getenv("POLICIES_PATH")
+	if policiesPath == "" {
+		policiesPath = "config/policies.yaml"
 	}
 
 	policyData, err := os.ReadFile(policiesPath)
@@ -337,10 +436,17 @@ func main() {
 		policiesMap[p.Subject] = p
 	}
 
+	appsMap := map[string]AppCredentials{
+		"automation": automationCreds,
+		"ci-bot":     automationCreds,
+		"guardian":   guardianCreds,
+	}
+
 	broker := &Broker{
-		appID:          appID,
-		installationID: installationID,
-		privateKey:     rsaKey,
+		appID:          defaultCreds.AppID,
+		installationID: defaultCreds.InstallationID,
+		privateKey:     defaultCreds.PrivateKey,
+		apps:           appsMap,
 		policies:       policiesMap,
 		httpClient:     &http.Client{Timeout: 15 * time.Second},
 	}
@@ -356,7 +462,7 @@ func main() {
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"status":             "healthy",
 			"timestamp":          time.Now().UTC().Format(time.RFC3339),
-			"version":            "1.0.0",
+			"version":            "1.1.0",
 			"policies_loaded":    len(broker.policies),
 			"private_key_loaded": broker.privateKey != nil,
 		})

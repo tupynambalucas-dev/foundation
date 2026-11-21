@@ -1,10 +1,11 @@
 # policies.yaml
 # Governança de Políticas de Acesso como Código (Policy-as-Code) do GitHub App Token Broker
-# Mapeia quem pede (subject) para o que pode acessar (repositories e permissions).
+# Mapeia quem pede (subject) para qual identidade (app) e o que pode acessar (repositories e permissions).
 
 policies:
-  # Permissão para runners de CI/CD do GitHub Actions em pipelines corporativos
+  # Permissão para runners de CI/CD do GitHub Actions em pipelines corporativos (Tier 2A: automation)
   - subject: "repo:tupynambalucas-dev/platform:ref:refs/heads/main"
+    app: "automation"
     allowed_repositories:
       - "platform"
       - "foundation"
@@ -15,6 +16,7 @@ policies:
       packages: "write"
 
   - subject: "repo:tupynambalucas-dev/foundation:ref:refs/heads/main"
+    app: "automation"
     allowed_repositories:
       - "foundation"
       - "org-core"
@@ -25,6 +27,7 @@ policies:
       packages: "write"
 
   - subject: "repo:tupynambalucas-dev/omnichannel:ref:refs/heads/main"
+    app: "automation"
     allowed_repositories:
       - "omnichannel"
     allowed_permissions:
@@ -33,6 +36,7 @@ policies:
       packages: "write"
 
   - subject: "repo:tupynambalucas-dev/agent-mesh:ref:refs/heads/main"
+    app: "automation"
     allowed_repositories:
       - "agent-mesh"
     allowed_permissions:
@@ -40,8 +44,9 @@ policies:
       pull_requests: "write"
       packages: "write"
 
-  # Permissão para o motor de avaliação e aprovação de PRs (The 6 Precondition Gates)
+  # Permissão para o motor de avaliação e aprovação de PRs (Tier 2B: guardian - 7 Precondition Gates)
   - subject: "service:pr-gate-evaluator"
+    app: "guardian"
     allowed_repositories:
       - "org-core"
       - ".github"
@@ -53,6 +58,7 @@ policies:
       - "org-ecosystem"
       - "omnichannel"
       - "elo-organico"
+      - "tessel"
     allowed_permissions:
       contents: "read"
       pull_requests: "write"
@@ -61,6 +67,7 @@ policies:
 
   # Permissão para agentes de engenharia (agent-mesh)
   - subject: "agent-mesh-autonomous-worker"
+    app: "automation"
     allowed_repositories:
       - "org-core"
       - ".github"
@@ -78,8 +85,9 @@ policies:
       pull_requests: "write"
       issues: "write"
 
-  # Permissão para auditoria de vulnerabilidades e segurança
+  # Permissão para auditoria de vulnerabilidades e segurança (Tier 2B: guardian)
   - subject: "security-auditor"
+    app: "guardian"
     allowed_repositories:
       - "*"
     allowed_permissions:
