@@ -17,6 +17,8 @@ policies:
   - subject: "repo:tupynambalucas-dev/foundation:ref:refs/heads/main"
     allowed_repositories:
       - "foundation"
+      - "org-core"
+      - ".github"
     allowed_permissions:
       contents: "write"
       pull_requests: "write"
@@ -30,12 +32,44 @@ policies:
       pull_requests: "write"
       packages: "write"
 
-  # Permissão para agentes de engenharia (agent-mesh)
-  - subject: "agent-mesh-autonomous-worker"
+  - subject: "repo:tupynambalucas-dev/agent-mesh:ref:refs/heads/main"
     allowed_repositories:
+      - "agent-mesh"
+    allowed_permissions:
+      contents: "write"
+      pull_requests: "write"
+      packages: "write"
+
+  # Permissão para o motor de avaliação e aprovação de PRs (The 6 Precondition Gates)
+  - subject: "service:pr-gate-evaluator"
+    allowed_repositories:
+      - "org-core"
+      - ".github"
+      - ".github-private"
+      - "agent-mesh"
       - "platform"
       - "foundation"
       - "docs"
+      - "org-ecosystem"
+      - "omnichannel"
+      - "elo-organico"
+    allowed_permissions:
+      contents: "read"
+      pull_requests: "write"
+      checks: "read"
+      statuses: "read"
+
+  # Permissão para agentes de engenharia (agent-mesh)
+  - subject: "agent-mesh-autonomous-worker"
+    allowed_repositories:
+      - "org-core"
+      - ".github"
+      - ".github-private"
+      - "agent-mesh"
+      - "platform"
+      - "foundation"
+      - "docs"
+      - "org-ecosystem"
       - "omnichannel"
       - "elo-organico"
       - "tessel"
