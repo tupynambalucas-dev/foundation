@@ -65,7 +65,7 @@ Under the Clean Root Invariant:
 - The root `package.json` and `pnpm-workspace.yaml` govern repository-wide TypeScript, linting, formatting, and Turborepo pipelines.
 
 ### Benefits of Clean Root:
-- Multi-root IDE workspaces (`tupynambalucas-dev-core.code-workspace`) parse language servers without root-level Go SDK interference.
+- Multi-root IDE workspaces (`tupynambalucas-dev.code-workspace`) parse language servers without root-level Go SDK interference.
 - GitHub Actions workflows use granular path triggers, preventing cross-domain build thrashing.
 - New CLI tools or extensions (e.g., written in Rust, TypeScript, or Go) can be introduced under `tools/` without mutating root configuration.
 

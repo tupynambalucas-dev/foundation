@@ -2,7 +2,7 @@
 
 This document serves as the Layer-1 root context router for AI agents operating inside `tupynambalucas-dev/foundation`, the enterprise foundation monorepo hosting WSL2 custom distributions (`distributions/`), developer toolchain & GitHub CLI extension suite (`tools/`), machine identities and Token Broker (`identity/`), and Windows host virtualization governance (`virtualization/`).
 
-When operating within the `org-core` umbrella workspace, also inherit root organizational policies from [`../AGENTS.md`](../AGENTS.md).
+When operating within the `org` umbrella workspace, also inherit root organizational policies from [`../AGENTS.md`](../AGENTS.md).
 
 ## Architectural Boundaries & Core Principles
 

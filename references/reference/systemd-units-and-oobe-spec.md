@@ -57,7 +57,7 @@ The OOBE script executes on the first boot of a newly registered distribution:
    - Configures `/etc/sudoers.d/tupy` with `NOPASSWD:ALL` (permissions `0440`).
 2. **Directory Scaffolding**:
    - Creates `/home/tupy/.ssh` (permissions `0700`).
-   - Creates corporate workspace directory: `/home/tupy/projects/organizations/tupynambalucas-dev`.
+   - Creates corporate workspace directory: `/home/tupy/projects/org`.
 3. **Windows Host Asset Synchronization**:
    - Locates Windows user profile via `/mnt/c/Windows/System32/cmd.exe /c "echo %USERPROFILE%"`.
    - Copies SSH keys matching `*ed25519*`, `config`, `known_hosts*`, and `allowed_signers` from `%UserProfile%\.ssh` into `/home/tupy/.ssh/`.

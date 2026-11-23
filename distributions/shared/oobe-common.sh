@@ -17,7 +17,7 @@ provision_developer_account() {
   win_profile=$(/mnt/c/Windows/System32/cmd.exe /c "echo %USERPROFILE%" 2>/dev/null | tr -d '\r' | sed 's/\\/\//g' | sed 's/^C:/\/mnt\/c/' || true)
 
   local dev_home="/home/${dev_user}"
-  mkdir -p "${dev_home}/.ssh" "${dev_home}/projects/organizations/tupynambalucas-dev"
+  mkdir -p "${dev_home}/.ssh" "${dev_home}/projects/org" "${dev_home}/projects/personal"
   chmod 0700 "${dev_home}/.ssh"
 
   # Stage shared Windows Terminal background image into $FRAGMENT_ROOT for portable relative lookup
@@ -33,14 +33,15 @@ provision_developer_account() {
     chmod 0644 "${dev_home}/.ssh/"*.pub "${dev_home}/.ssh/config" "${dev_home}/.ssh/known_hosts" "${dev_home}/.ssh/allowed_signers" 2>/dev/null || true
   fi
 
-  if [ -n "$win_profile" ] && [ -f "${win_profile}/.gitconfig" ]; then
-    cp "${win_profile}/.gitconfig" "${dev_home}/.gitconfig"
-    sed -i "s|C:/Users/[^/]*/|/home/${dev_user}/|g" "${dev_home}/.gitconfig" || true
-  fi
-
-  if [ -n "$win_profile" ] && [ -f "${win_profile}/.gitconfig-tupynambalucas-dev" ]; then
-    cp "${win_profile}/.gitconfig-tupynambalucas-dev" "${dev_home}/.gitconfig-tupynambalucas-dev"
-    sed -i "s|C:/Users/[^/]*/|/home/${dev_user}/|g" "${dev_home}/.gitconfig-tupynambalucas-dev" || true
+  if [ -n "$win_profile" ]; then
+    for gc in "${win_profile}"/.gitconfig*; do
+      if [ -f "$gc" ]; then
+        local gc_name
+        gc_name=$(basename "$gc")
+        cp "$gc" "${dev_home}/${gc_name}"
+        sed -i "s|C:/Users/[^/]*/|/home/${dev_user}/|g" "${dev_home}/${gc_name}" || true
+      fi
+    done
   fi
 
   chown -R "${dev_user}:${dev_user}" "${dev_home}"

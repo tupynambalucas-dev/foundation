@@ -297,7 +297,7 @@ def evaluate_pr(owner, repo, pr_number, token, identity_label="tupynambalucas-gu
 
 def main():
     parser = argparse.ArgumentParser(description="Enterprise PR Gate Evaluator (tupynambalucas-guardian)")
-    parser.add_argument("--repo", default="tupynambalucas-dev/org-core", help="Target repository in format owner/repo")
+    parser.add_argument("--repo", default="tupynambalucas-dev/org", help="Target repository in format owner/repo")
     parser.add_argument("--pr", type=int, help="Target PR number")
     parser.add_argument("--all-pilot", action="store_true", help="Evaluate all 8 migration pilot PRs")
     parser.add_argument("--dry-run", action="store_true", help="Evaluate gates without submitting review")
@@ -309,12 +309,12 @@ def main():
 
     if args.all_pilot:
         pilot_prs = [
-            ("tupynambalucas-dev", "org-core", 43),
+            ("tupynambalucas-dev", "org", 43),
             ("tupynambalucas-dev", ".github", 59),
             ("tupynambalucas-dev", ".github-private", 3),
             ("tupynambalucas-dev", "platform", 55),
             ("tupynambalucas-dev", "foundation", 19),
-            ("tupynambalucas-dev", "org-ecosystem", 14),
+            ("tupynambalucas-dev", "ecosystem", 14),
             ("tupynambalucas-dev", "omnichannel", 22),
             ("tupynambalucas-dev", "elo-organico", 14),
         ]
