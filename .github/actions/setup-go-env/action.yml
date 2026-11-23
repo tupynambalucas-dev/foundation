@@ -5,11 +5,11 @@ inputs:
   go-version-file:
     description: "Path to go.mod file determining the Go toolchain version"
     required: false
-    default: "tools/github/extensions/gh-tl/go.mod"
+    default: "extensions/gh-tl/go.mod"
   cache-dependency-path:
     description: "Path to go.sum for caching"
     required: false
-    default: "tools/github/extensions/gh-tl/go.sum"
+    default: "extensions/gh-tl/go.sum"
 
 runs:
   using: "composite"
