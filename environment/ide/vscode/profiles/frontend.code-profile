@@ -1,0 +1,5 @@
+{
+  "name": "Frontend Engineer",
+  "settings": "{\n  \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n  \"editor.formatOnSave\": true\n}",
+  "extensions": "[\n  {\"identifier\": {\"id\": \"biomejs.biome\"}},\n  {\"identifier\": {\"id\": \"dbaeumer.vscode-eslint\"}},\n  {\"identifier\": {\"id\": \"esbenp.prettier-vscode\"}}\n]"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@tupynambalucas-dev/foundation-environment",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise developer environment governance, universal editor standards, and IDE configurations.",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

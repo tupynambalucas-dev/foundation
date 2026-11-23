@@ -37,7 +37,7 @@ jobs:
         uses: ./.github/actions/setup-go-env
 
       - name: Run Go tests
-        working-directory: tools/github/extensions/gh-tl
+        working-directory: extensions/gh-tl
         run: |
           go vet ./...
           go test -race ./...
