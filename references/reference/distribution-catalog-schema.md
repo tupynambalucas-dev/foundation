@@ -29,7 +29,7 @@ Microsoft WSL 2.4.4+ utilizes a declarative JSON manifest format called **Modern
       "TerminalProfile": {
         "name": "tupynambalucas-dev",
         "commandline": "wsl.exe -d tupynambalucas-dev",
-        "startingDirectory": "//wsl.localhost/tupynambalucas-dev/home/tupy/projects/organizations/tupynambalucas-dev",
+        "startingDirectory": "//wsl.localhost/tupynambalucas-dev/home/tupy/projects/org",
         "icon": "%LOCALAPPDATA%/Microsoft/Windows Terminal/Fragments/Microsoft.WSL/tupynambalucas-dev.ico",
         "backgroundImage": "%LOCALAPPDATA%/Microsoft/Windows Terminal/Fragments/Microsoft.WSL/monygang.png",
         "backgroundImageOpacity": 0.25,

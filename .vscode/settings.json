@@ -8,7 +8,7 @@
     "**/dist": true
   },
   "files.exclude": {
-    "**/.git": false
+    "**/.git": true
   },
   "gopls": {
     "ui.navigation.importShortcut": "Both",
