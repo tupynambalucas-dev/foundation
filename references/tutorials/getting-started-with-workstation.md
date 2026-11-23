@@ -55,7 +55,7 @@ gh tl onboard --user "Your Full Name" --email "contato@tupynambalucas.dev"
 1. **SSH Keypair Generation**: An Ed25519 keypair is generated at `%UserProfile%\.ssh\id_ed25519` (if not already present).
 2. **GitHub Key Enrollment**: Your public key is registered with your GitHub account for both SSH authentication and commit signing.
 3. **Allowed Signers Configuration**: `%UserProfile%\.ssh\allowed_signers` is populated to verify signed commits locally.
-4. **Conditional Git Configuration**: An `includeIf` block is inserted into `%UserProfile%\.gitconfig`, isolating corporate commits inside `projects/organizations/tupynambalucas-dev/` without affecting personal projects.
+4. **Conditional Git Configuration**: An `includeIf` block is inserted into `%UserProfile%\.gitconfig`, isolating corporate commits inside `projects/org/` without affecting personal projects.
 
 ---
 

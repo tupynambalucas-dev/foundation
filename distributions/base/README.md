@@ -1,6 +1,6 @@
 # Base Developer Workstation Distribution (`tupynambalucas-dev`)
 
-Layer-3 WSL2 Distribution-as-Code package producing `tupynambalucas-dev.wsl` on **Ubuntu 26.04 LTS**, engineered for daily polyglot development across `org-core`, `agent-mesh`, `docs`, `workstation`, and `platform`.
+Layer-3 WSL2 Distribution-as-Code package producing `tupynambalucas-dev.wsl` on **Ubuntu 26.04 LTS**, engineered for daily polyglot development across `org`, `agent-mesh`, `docs`, `workstation`, and `platform`.
 
 ---
 
@@ -11,7 +11,7 @@ Layer-3 WSL2 Distribution-as-Code package producing `tupynambalucas-dev.wsl` on 
 | **Base OS** | Ubuntu 26.04 LTS (`en_US.UTF-8`) | Long-Term Support Linux userland with `systemd=true` |
 | **Node.js & pnpm** | Node.js `v22.x` LTS + `pnpm` `12.6.0` (Corepack) | TypeScript monorepos, Docusaurus v3, and MCP plugins |
 | **Go Runtime** | Go `1.27.3` | `workstation` CLI development and Go microservices |
-| **Mani CLI** | `v0.30.0` | Multi-repository orchestration across `org-core` |
+| **Mani CLI** | `v0.30.0` | Multi-repository orchestration across `org` |
 | **GitHub CLI (`gh`)** | Latest official apt release | PR workflows, Actions inspection, and `gh tl` extensions |
 | **Infisical CLI** | Latest official apt release | Zero-plaintext secret injection (`infisical run -- ...`) |
 | **Docker Engine** | `docker-ce` + `buildx` + `compose` (`docker.socket`) | Socket-activated on-demand container builds (0 MB idle RAM) |
