@@ -1,8 +1,10 @@
 {
   "files": [],
   "references": [
-    { "path": "./tools" },
     { "path": "./distributions" },
-    { "path": "./virtualization" }
+    { "path": "./virtualization" },
+    { "path": "./identity/portal" },
+    { "path": "./environment" },
+    { "path": "./extensions/gh-tl" }
   ]
 }

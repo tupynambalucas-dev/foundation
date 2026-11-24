@@ -1,0 +1,14 @@
+version: "1.0.0"
+extensions:
+  - id: "biomejs.biome"
+    status: "recommended"
+    platforms: ["win32", "darwin", "linux"]
+  - id: "golang.go"
+    status: "recommended"
+    platforms: ["win32", "darwin", "linux"]
+  - id: "charliermarsh.ruff"
+    status: "recommended"
+    platforms: ["win32", "darwin", "linux"]
+  - id: "ms-azuretools.vscode-docker"
+    status: "recommended"
+    platforms: ["win32", "darwin", "linux"]

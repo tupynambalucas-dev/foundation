@@ -11,9 +11,10 @@ allowBuilds:
 
 packages:
   - 'distributions'
-  - 'tools/github/extensions/*'
   - 'virtualization'
   - 'identity/portal'
+  - 'environment'
+  - 'extensions/*'
 
 catalog:
   '@cloudflare/workers-types': '^4.20250214.0'

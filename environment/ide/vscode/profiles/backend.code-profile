@@ -1,0 +1,5 @@
+{
+  "name": "Backend Engineer",
+  "settings": "{\n  \"editor.tabSize\": 2,\n  \"editor.insertSpaces\": true\n}",
+  "extensions": "[\n  {\"identifier\": {\"id\": \"golang.go\"}},\n  {\"identifier\": {\"id\": \"charliermarsh.ruff\"}},\n  {\"identifier\": {\"id\": \"ms-azuretools.vscode-docker\"}}\n]"
+}
