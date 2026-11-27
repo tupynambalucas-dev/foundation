@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { PortalEnv, PrGateParams } from '../types';
 import { handleGitHubManifestCallback } from './callback';
+import { handleGitHubManifestProvision } from './provision';
 import {
   evaluateBotFileConfinement,
   evaluateRbacGate,
@@ -240,5 +241,35 @@ describe('HTTP Handlers (Webhooks & Manifest Callback)', () => {
       envNoAccess
     );
     assert.equal(badStateRes.status, 401);
+  });
+
+  it('enforces Cloudflare Access and renders auto-submit manifest form in GET /api/github/provision', async () => {
+    const envWithAccess = createMockEnv({
+      CF_ACCESS_TEAM_DOMAIN: 'tupynambalucas.cloudflareaccess.com',
+      CF_ACCESS_AUD: 'test-aud-tag',
+    });
+    const noAccessRes = await handleGitHubManifestProvision(
+      new Request('https://apps.tupynambalucas.dev/api/github/provision?tier=guardian'),
+      envWithAccess
+    );
+    assert.equal(noAccessRes.status, 403);
+
+    const envNoAccess = createMockEnv();
+    const invalidTierRes = await handleGitHubManifestProvision(
+      new Request('https://apps.tupynambalucas.dev/api/github/provision?tier=unknown'),
+      envNoAccess
+    );
+    assert.equal(invalidTierRes.status, 400);
+
+    const okRes = await handleGitHubManifestProvision(
+      new Request('https://apps.tupynambalucas.dev/api/github/provision?tier=guardian'),
+      envNoAccess
+    );
+    assert.equal(okRes.status, 200);
+    assert.match(okRes.headers.get('Content-Type') || '', /text\/html/);
+    const html = await okRes.text();
+    assert.match(html, /https:\/\/github\.com\/organizations\/tupynambalucas-dev\/settings\/apps\/new\?state=/);
+    assert.match(html, /tupynambalucas-guardian/);
+    assert.match(html, /https:\/\/apps\.tupynambalucas\.dev\/api\/github\/callback/);
   });
 });

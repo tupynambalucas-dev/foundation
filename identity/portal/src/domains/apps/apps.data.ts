@@ -35,7 +35,7 @@ export const APPS_DATA: IAppRecord[] = [
     tier: 'Tier 2',
     description: 'Plano de Proteção, Auditoria e Governança (SoD). Avalia os 7 Quality Gates, assinaturas SSH, commits semânticos e confinamento de arquivos para aprovação formal de PRs.',
     appId: 'Pending Provisioning',
-    status: 'Ativo em Produção',
+    status: 'Pendente de Provisionamento',
     scopes: ['contents:read', 'pull_requests:write', 'checks:read', 'statuses:read', 'security_events:read'],
     homepageUrl: 'https://apps.tupynambalucas.dev',
     docsPath: 'foundation/identity/apps/github/guardian',
