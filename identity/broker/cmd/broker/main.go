@@ -370,7 +370,7 @@ func (b *Broker) ValidatePolicy(subject string, req TokenRequest) error {
 
 	policy, exists := b.policies[subject]
 	if !exists {
-		return fmt.Errorf("subject %q is not authorized by any active policy", subject)
+		return fmt.Errorf("caller is not authorized by any active policy")
 	}
 
 	// Org-manager metadata queries may omit repositories only when policy explicitly allows "*"
@@ -387,14 +387,14 @@ func (b *Broker) ValidatePolicy(subject string, req TokenRequest) error {
 
 	for _, reqRepo := range req.Repositories {
 		if !allowedRepoSet[reqRepo] && !allowedRepoSet["*"] {
-			return fmt.Errorf("repository %q is not permitted for subject %q", reqRepo, subject)
+			return fmt.Errorf("repository %q is not permitted for policy %q", reqRepo, policy.Subject)
 		}
 	}
 
 	for perm, reqLevel := range req.Permissions {
 		allowedLevel, ok := policy.AllowedPermissions[perm]
 		if !ok {
-			return fmt.Errorf("permission %q is not permitted for subject %q", perm, subject)
+			return fmt.Errorf("permission %q is not permitted for policy %q", perm, policy.Subject)
 		}
 		if permRanks[reqLevel] > permRanks[allowedLevel] {
 			return fmt.Errorf("requested level %q for permission %q exceeds permitted level %q", reqLevel, perm, allowedLevel)
@@ -453,7 +453,7 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := b.ValidatePolicy(subject, req); err != nil {
-		log.Printf("[AUDIT-DENIED] subject=%q error=%v", subject, err)
+		log.Printf("[AUDIT-DENIED] error=%v", err)
 		http.Error(w, fmt.Sprintf("Forbidden: %v", err), http.StatusForbidden)
 		return
 	}
@@ -466,8 +466,8 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	b.mu.RLock()
 	if cached, ok := b.tokenCache[cacheKey]; ok && cached.ExpiresAt.After(time.Now().Add(tokenSafetyMargin)) {
 		b.mu.RUnlock()
-		log.Printf("[AUDIT-CACHED] subject=%q app=%q repositories=%v expires_at=%s",
-			subject, policy.App, req.Repositories, cached.ExpiresAt.Format(time.RFC3339))
+		log.Printf("[AUDIT-CACHED] policy=%q app=%q repositories=%v expires_at=%s",
+			policy.Subject, policy.App, req.Repositories, cached.ExpiresAt.Format(time.RFC3339))
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(cached)
 		return
@@ -476,7 +476,7 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 
 	creds, err := b.ResolveAppCredentials(policy.App)
 	if err != nil {
-		log.Printf("[ERROR] Failed to resolve credentials for subject=%q app=%q: %v", subject, policy.App, err)
+		log.Printf("[ERROR] Failed to resolve credentials for policy=%q app=%q: %v", policy.Subject, policy.App, err)
 		http.Error(w, "Internal server error resolving machine identity credentials", http.StatusInternalServerError)
 		return
 	}
@@ -537,8 +537,8 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	b.tokenCache[cacheKey] = ghResult
 	b.mu.Unlock()
 
-	log.Printf("[AUDIT-ISSUED] subject=%q app=%q repositories=%v permissions=%v expires_at=%s",
-		subject, policy.App, req.Repositories, req.Permissions, ghResult.ExpiresAt.Format(time.RFC3339))
+	log.Printf("[AUDIT-ISSUED] policy=%q app=%q repositories=%v permissions=%v expires_at=%s",
+		policy.Subject, policy.App, req.Repositories, req.Permissions, ghResult.ExpiresAt.Format(time.RFC3339))
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(ghResult)
