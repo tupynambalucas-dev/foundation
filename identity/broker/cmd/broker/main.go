@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
+	"crypto/subtle"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
@@ -13,13 +14,23 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/big"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"time"
 
 	"gopkg.in/yaml.v3"
+)
+
+const (
+	githubAPIVersion   = "2026-03-10"
+	githubOIDCIssuer   = "https://token.actions.githubusercontent.com"
+	defaultOIDCJWKSURL = "https://token.actions.githubusercontent.com/.well-known/jwks"
+	jwksCacheTTL       = 15 * time.Minute
+	tokenSafetyMargin  = 5 * time.Minute
 )
 
 // Policy defines the permissions granted to a specific subject (caller identity).
@@ -37,8 +48,11 @@ type PoliciesConfig struct {
 
 // TokenRequest represents the payload received from a caller wanting an installation token.
 type TokenRequest struct {
+	App          string            `json:"app,omitempty"`
+	Tier         string            `json:"tier,omitempty"`
+	Repository   string            `json:"repository,omitempty"`
 	Repositories []string          `json:"repositories"`
-	Permissions  map[string]string `json:"permissions"`
+	Permissions  map[string]string `json:"permissions,omitempty"`
 }
 
 // TokenResponse represents the short-lived installation access token returned to the caller.
@@ -54,13 +68,29 @@ type AppCredentials struct {
 	PrivateKey     *rsa.PrivateKey
 }
 
-// Broker holds configuration and cryptographic keys for token vending.
+type jwkKey struct {
+	Kid string `json:"kid"`
+	Kty string `json:"kty"`
+	N   string `json:"n"`
+	E   string `json:"e"`
+}
+
+type jwksResponse struct {
+	Keys []jwkKey `json:"keys"`
+}
+
+// Broker holds configuration, cryptographic keys, JWKS cache, and 55-minute token cache.
 type Broker struct {
 	appID          string
 	installationID string
 	privateKey     *rsa.PrivateKey
 	apps           map[string]AppCredentials
 	policies       map[string]Policy
+	apiKey         string
+	oidcJWKSURL    string
+	jwksKeys       map[string]*rsa.PublicKey
+	jwksExpiresAt  time.Time
+	tokenCache     map[string]TokenResponse
 	mu             sync.RWMutex
 	httpClient     *http.Client
 }
@@ -78,7 +108,6 @@ func LoadPrivateKey(pemBytes []byte) (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("failed to decode PEM block containing private key")
 	}
 
-	// Try PKCS#1 first, then PKCS#8
 	if key, err := x509.ParsePKCS1PrivateKey(block.Bytes); err == nil {
 		return key, nil
 	}
@@ -98,22 +127,20 @@ func GenerateJWTForApp(appID string, privateKey *rsa.PrivateKey) (string, error)
 		return "", fmt.Errorf("private key is not initialized")
 	}
 
-	header := map[string]string{
+	headerJSON, err := json.Marshal(map[string]string{
 		"alg": "RS256",
 		"typ": "JWT",
-	}
-	headerJSON, err := json.Marshal(header)
+	})
 	if err != nil {
 		return "", err
 	}
 
 	now := time.Now().Unix()
-	claims := map[string]interface{}{
-		"iat": now - 60,       // 60s clock skew tolerance
-		"exp": now + (5 * 60), // Valid for 5 minutes
+	claimsJSON, err := json.Marshal(map[string]interface{}{
+		"iat": now - 60,
+		"exp": now + (5 * 60),
 		"iss": appID,
-	}
-	claimsJSON, err := json.Marshal(claims)
+	})
 	if err != nil {
 		return "", err
 	}
@@ -128,8 +155,7 @@ func GenerateJWTForApp(appID string, privateKey *rsa.PrivateKey) (string, error)
 		return "", fmt.Errorf("failed to sign JWT: %w", err)
 	}
 
-	encodedSignature := base64.RawURLEncoding.EncodeToString(signature)
-	return signingInput + "." + encodedSignature, nil
+	return signingInput + "." + base64.RawURLEncoding.EncodeToString(signature), nil
 }
 
 // GenerateJWT creates a signed RS256 JWT using the broker's default credentials.
@@ -137,11 +163,18 @@ func (b *Broker) GenerateJWT() (string, error) {
 	return GenerateJWTForApp(b.appID, b.privateKey)
 }
 
-// ResolveAppCredentials returns the AppCredentials for a policy's designated app tier, falling back to default credentials.
+// ResolveAppCredentials returns AppCredentials for the designated app tier with strict
+// No-Privilege-Escalation isolation (never falls back to org-manager).
 func (b *Broker) ResolveAppCredentials(appSlug string) (AppCredentials, error) {
-	if appSlug != "" && b.apps != nil {
-		if creds, ok := b.apps[appSlug]; ok && creds.AppID != "" && creds.InstallationID != "" && creds.PrivateKey != nil {
-			return creds, nil
+	if appSlug != "" {
+		if b.apps != nil {
+			if creds, ok := b.apps[appSlug]; ok && creds.AppID != "" && creds.InstallationID != "" && creds.PrivateKey != nil {
+				return creds, nil
+			}
+		}
+		// Never silently fall back to another tier when org-manager is requested explicitly
+		if appSlug == "org-manager" {
+			return AppCredentials{}, fmt.Errorf("credentials not initialized for privileged tier %q", appSlug)
 		}
 	}
 	if b.appID != "" && b.installationID != "" && b.privateKey != nil {
@@ -168,29 +201,149 @@ type GitHubOIDCTokenClaims struct {
 	IssuedAt        int64       `json:"iat"`
 }
 
-// VerifyCallerIdentity extracts and validates the subject from the authorization header.
-// Supports GitHub Actions OIDC ID-Tokens (validating issuer, exp, and nbf), standard JWTs,
-// or direct machine identity subjects.
-func (b *Broker) VerifyCallerIdentity(authHeader string) (string, error) {
+func (b *Broker) getOIDCPublicKey(kid string) (*rsa.PublicKey, error) {
+	b.mu.RLock()
+	if b.jwksKeys != nil && time.Now().Before(b.jwksExpiresAt) {
+		if key, ok := b.jwksKeys[kid]; ok {
+			b.mu.RUnlock()
+			return key, nil
+		}
+	}
+	b.mu.RUnlock()
+
+	jwksURL := b.oidcJWKSURL
+	if jwksURL == "" {
+		jwksURL = defaultOIDCJWKSURL
+	}
+	client := b.httpClient
+	if client == nil {
+		client = &http.Client{Timeout: 10 * time.Second}
+	}
+
+	resp, err := client.Get(jwksURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch OIDC JWKS: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("OIDC JWKS endpoint returned HTTP %d", resp.StatusCode)
+	}
+
+	var parsed jwksResponse
+	if err := json.NewDecoder(resp.Body).Decode(&parsed); err != nil {
+		return nil, fmt.Errorf("failed to decode OIDC JWKS: %w", err)
+	}
+
+	keys := make(map[string]*rsa.PublicKey)
+	for _, k := range parsed.Keys {
+		if k.Kty != "RSA" || k.N == "" || k.E == "" {
+			continue
+		}
+		nBytes, errN := base64.RawURLEncoding.DecodeString(k.N)
+		eBytes, errE := base64.RawURLEncoding.DecodeString(k.E)
+		if errN != nil || errE != nil {
+			continue
+		}
+		var eInt int
+		for _, eb := range eBytes {
+			eInt = eInt<<8 + int(eb)
+		}
+		keys[k.Kid] = &rsa.PublicKey{
+			N: new(big.Int).SetBytes(nBytes),
+			E: eInt,
+		}
+	}
+
+	b.mu.Lock()
+	b.jwksKeys = keys
+	b.jwksExpiresAt = time.Now().Add(jwksCacheTTL)
+	b.mu.Unlock()
+
+	if kid != "" {
+		if key, ok := keys[kid]; ok {
+			return key, nil
+		}
+		return nil, fmt.Errorf("no matching RSA JWK found for kid %q", kid)
+	}
+	for _, key := range keys {
+		return key, nil
+	}
+	return nil, fmt.Errorf("OIDC JWKS contained no usable RSA keys")
+}
+
+func (b *Broker) verifyOIDCSignature(parts []string) error {
+	if len(parts) != 3 {
+		return fmt.Errorf("malformed OIDC JWT")
+	}
+	headerBytes, err := base64.RawURLEncoding.DecodeString(parts[0])
+	if err != nil {
+		return fmt.Errorf("invalid OIDC JWT header encoding: %w", err)
+	}
+	var header struct {
+		Alg string `json:"alg"`
+		Kid string `json:"kid"`
+	}
+	if err := json.Unmarshal(headerBytes, &header); err != nil {
+		return fmt.Errorf("invalid OIDC JWT header JSON: %w", err)
+	}
+	if header.Alg != "RS256" {
+		return fmt.Errorf("unsupported OIDC JWT alg %q (RS256 required)", header.Alg)
+	}
+
+	pubKey, err := b.getOIDCPublicKey(header.Kid)
+	if err != nil {
+		return err
+	}
+
+	sigBytes, err := base64.RawURLEncoding.DecodeString(parts[2])
+	if err != nil {
+		return fmt.Errorf("invalid OIDC JWT signature encoding: %w", err)
+	}
+	hashed := sha256.Sum256([]byte(parts[0] + "." + parts[1]))
+	if err := rsa.VerifyPKCS1v15(pubKey, crypto.SHA256, hashed[:], sigBytes); err != nil {
+		return fmt.Errorf("OIDC JWT RS256 signature verification failed: %w", err)
+	}
+	return nil
+}
+
+// VerifyCallerIdentity extracts and validates the caller subject from Authorization and optional X-Caller-ID.
+func (b *Broker) VerifyCallerIdentity(authHeader string, callerIDHeader ...string) (string, error) {
 	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
 		return "", fmt.Errorf("missing or invalid Authorization bearer header")
 	}
 
 	rawToken := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+	callerID := ""
+	if len(callerIDHeader) > 0 {
+		callerID = strings.TrimSpace(callerIDHeader[0])
+	}
+
+	// 1. Shared API Key + X-Caller-ID for authenticated local/internal callers
+	if b.apiKey != "" && subtle.ConstantTimeCompare([]byte(rawToken), []byte(b.apiKey)) == 1 {
+		if callerID == "" {
+			return "", fmt.Errorf("authenticated API key caller must provide X-Caller-ID header")
+		}
+		return callerID, nil
+	}
+
+	// 2. JWT / GitHub Actions OIDC token
 	parts := strings.Split(rawToken, ".")
-	if len(parts) >= 2 {
+	if len(parts) == 3 {
 		payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
 		if err == nil {
 			var claims GitHubOIDCTokenClaims
 			if json.Unmarshal(payloadBytes, &claims) == nil && claims.Subject != "" {
 				now := time.Now().Unix()
-				// Assert temporal validity if issued by GitHub Actions OIDC provider
-				if claims.Issuer == "https://token.actions.githubusercontent.com" {
+				if claims.Issuer == githubOIDCIssuer {
 					if claims.ExpiresAt > 0 && claims.ExpiresAt < now-30 {
 						return "", fmt.Errorf("GitHub Actions OIDC token is expired (exp=%d, now=%d)", claims.ExpiresAt, now)
 					}
 					if claims.NotBefore > 0 && claims.NotBefore > now+60 {
 						return "", fmt.Errorf("GitHub Actions OIDC token is not yet valid (nbf=%d, now=%d)", claims.NotBefore, now)
+					}
+					if err := b.verifyOIDCSignature(parts); err != nil {
+						return "", err
 					}
 				}
 				return claims.Subject, nil
@@ -198,7 +351,15 @@ func (b *Broker) VerifyCallerIdentity(authHeader string) (string, error) {
 		}
 	}
 
-	// Fallback for local testing and direct machine identity tokens
+	// 3. When API key is enforced, reject unauthenticated raw subjects
+	if b.apiKey != "" {
+		return "", fmt.Errorf("invalid Authorization bearer credential")
+	}
+
+	// 4. Local loopback fallback without API key
+	if callerID != "" {
+		return callerID, nil
+	}
 	return rawToken, nil
 }
 
@@ -212,14 +373,16 @@ func (b *Broker) ValidatePolicy(subject string, req TokenRequest) error {
 		return fmt.Errorf("subject %q is not authorized by any active policy", subject)
 	}
 
-	// Ensure repository list is non-empty (never issue wildcard tokens)
-	if len(req.Repositories) == 0 {
-		return fmt.Errorf("request must specify at least one repository explicitly")
-	}
-
+	// Org-manager metadata queries may omit repositories only when policy explicitly allows "*"
 	allowedRepoSet := make(map[string]bool)
 	for _, repo := range policy.AllowedRepositories {
 		allowedRepoSet[repo] = true
+	}
+
+	if len(req.Repositories) == 0 {
+		if !(policy.App == "org-manager" && allowedRepoSet["*"]) {
+			return fmt.Errorf("request must specify at least one repository explicitly")
+		}
 	}
 
 	for _, reqRepo := range req.Repositories {
@@ -241,14 +404,38 @@ func (b *Broker) ValidatePolicy(subject string, req TokenRequest) error {
 	return nil
 }
 
-// HandleTokenRequest processes token issuance against GitHub API.
+func buildCacheKey(appSlug string, repos []string, perms map[string]string) string {
+	sortedRepos := append([]string(nil), repos...)
+	sort.Strings(sortedRepos)
+
+	permKeys := make([]string, 0, len(perms))
+	for k := range perms {
+		permKeys = append(permKeys, k)
+	}
+	sort.Strings(permKeys)
+
+	var sb strings.Builder
+	sb.WriteString(appSlug)
+	sb.WriteString("|")
+	sb.WriteString(strings.Join(sortedRepos, ","))
+	sb.WriteString("|")
+	for _, k := range permKeys {
+		sb.WriteString(k)
+		sb.WriteString("=")
+		sb.WriteString(perms[k])
+		sb.WriteString(";")
+	}
+	return sb.String()
+}
+
+// HandleTokenRequest processes token issuance against GitHub API with 55-minute caching.
 func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	subject, err := b.VerifyCallerIdentity(r.Header.Get("Authorization"))
+	subject, err := b.VerifyCallerIdentity(r.Header.Get("Authorization"), r.Header.Get("X-Caller-ID"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Unauthorized: %v", err), http.StatusUnauthorized)
 		return
@@ -260,6 +447,11 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Normalize legacy singular `repository` field into `repositories`
+	if len(req.Repositories) == 0 && strings.TrimSpace(req.Repository) != "" {
+		req.Repositories = []string{strings.TrimSpace(req.Repository)}
+	}
+
 	if err := b.ValidatePolicy(subject, req); err != nil {
 		log.Printf("[AUDIT-DENIED] subject=%q error=%v", subject, err)
 		http.Error(w, fmt.Sprintf("Forbidden: %v", err), http.StatusForbidden)
@@ -268,6 +460,18 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 
 	b.mu.RLock()
 	policy := b.policies[subject]
+	b.mu.RUnlock()
+
+	cacheKey := buildCacheKey(policy.App, req.Repositories, req.Permissions)
+	b.mu.RLock()
+	if cached, ok := b.tokenCache[cacheKey]; ok && cached.ExpiresAt.After(time.Now().Add(tokenSafetyMargin)) {
+		b.mu.RUnlock()
+		log.Printf("[AUDIT-CACHED] subject=%q app=%q repositories=%v expires_at=%s",
+			subject, policy.App, req.Repositories, cached.ExpiresAt.Format(time.RFC3339))
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(cached)
+		return
+	}
 	b.mu.RUnlock()
 
 	creds, err := b.ResolveAppCredentials(policy.App)
@@ -284,9 +488,16 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	githubURL := fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", creds.InstallationID)
-	reqBody, _ := json.Marshal(req)
+	ghPayload := map[string]interface{}{}
+	if len(req.Repositories) > 0 {
+		ghPayload["repositories"] = req.Repositories
+	}
+	if len(req.Permissions) > 0 {
+		ghPayload["permissions"] = req.Permissions
+	}
+	reqBody, _ := json.Marshal(ghPayload)
 
+	githubURL := fmt.Sprintf("https://api.github.com/app/installations/%s/access_tokens", creds.InstallationID)
 	ghReq, err := http.NewRequestWithContext(r.Context(), "POST", githubURL, bytes.NewReader(reqBody))
 	if err != nil {
 		http.Error(w, "Failed to create GitHub API request", http.StatusInternalServerError)
@@ -295,7 +506,7 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 
 	ghReq.Header.Set("Authorization", "Bearer "+jwtToken)
 	ghReq.Header.Set("Accept", "application/vnd.github+json")
-	ghReq.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	ghReq.Header.Set("X-GitHub-Api-Version", githubAPIVersion)
 	ghReq.Header.Set("Content-Type", "application/json")
 
 	ghResp, err := b.httpClient.Do(ghReq)
@@ -313,23 +524,24 @@ func (b *Broker) HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var ghResult struct {
-		Token     string    `json:"token"`
-		ExpiresAt time.Time `json:"expires_at"`
-	}
+	var ghResult TokenResponse
 	if err := json.NewDecoder(ghResp.Body).Decode(&ghResult); err != nil {
 		http.Error(w, "Failed to parse GitHub response", http.StatusInternalServerError)
 		return
 	}
 
+	b.mu.Lock()
+	if b.tokenCache == nil {
+		b.tokenCache = make(map[string]TokenResponse)
+	}
+	b.tokenCache[cacheKey] = ghResult
+	b.mu.Unlock()
+
 	log.Printf("[AUDIT-ISSUED] subject=%q app=%q repositories=%v permissions=%v expires_at=%s",
 		subject, policy.App, req.Repositories, req.Permissions, ghResult.ExpiresAt.Format(time.RFC3339))
 
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(TokenResponse{
-		Token:     ghResult.Token,
-		ExpiresAt: ghResult.ExpiresAt,
-	})
+	_ = json.NewEncoder(w).Encode(ghResult)
 }
 
 func loadAppCredentialsFromEnv(prefix string, fallbackPrefix string) AppCredentials {
@@ -407,6 +619,7 @@ func loadAppCredentialsFromEnv(prefix string, fallbackPrefix string) AppCredenti
 }
 
 func main() {
+	orgManagerCreds := loadAppCredentialsFromEnv("ORG_MANAGER", "")
 	defaultCreds := loadAppCredentialsFromEnv("GITHUB", "AUTOMATION")
 	automationCreds := loadAppCredentialsFromEnv("AUTOMATION", "CI_BOT")
 	guardianCreds := loadAppCredentialsFromEnv("GUARDIAN", "AUTOMATION")
@@ -437,9 +650,10 @@ func main() {
 	}
 
 	appsMap := map[string]AppCredentials{
-		"automation": automationCreds,
-		"ci-bot":     automationCreds,
-		"guardian":   guardianCreds,
+		"org-manager": orgManagerCreds,
+		"automation":  automationCreds,
+		"ci-bot":      automationCreds,
+		"guardian":    guardianCreds,
 	}
 
 	broker := &Broker{
@@ -448,12 +662,19 @@ func main() {
 		privateKey:     defaultCreds.PrivateKey,
 		apps:           appsMap,
 		policies:       policiesMap,
+		apiKey:         strings.TrimSpace(os.Getenv("TOKEN_BROKER_API_KEY")),
+		oidcJWKSURL:    defaultOIDCJWKSURL,
+		tokenCache:     make(map[string]TokenResponse),
 		httpClient:     &http.Client{Timeout: 15 * time.Second},
 	}
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	bindAddr := os.Getenv("BIND_ADDR")
+	if bindAddr == "" {
+		port := os.Getenv("PORT")
+		if port == "" {
+			port = "8080"
+		}
+		bindAddr = ":" + port
 	}
 
 	mux := http.NewServeMux()
@@ -462,17 +683,23 @@ func main() {
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"status":             "healthy",
 			"timestamp":          time.Now().UTC().Format(time.RFC3339),
-			"version":            "1.1.0",
+			"version":            "1.2.0",
+			"api_version":        githubAPIVersion,
 			"policies_loaded":    len(broker.policies),
 			"private_key_loaded": broker.privateKey != nil,
+			"tiers_ready": map[string]bool{
+				"org-manager": orgManagerCreds.PrivateKey != nil,
+				"automation":  automationCreds.PrivateKey != nil,
+				"guardian":    guardianCreds.PrivateKey != nil,
+			},
 		})
 	})
 	mux.HandleFunc("/v1/github/token", broker.HandleTokenRequest)
 	mux.HandleFunc("/v1/token", broker.HandleTokenRequest)
 
-	log.Printf("GitHub App Token Broker running on :%s (policies: %d loaded)", port, len(broker.policies))
+	log.Printf("GitHub App Token Broker v1.2.0 running on %s (policies: %d loaded)", bindAddr, len(broker.policies))
 	server := &http.Server{
-		Addr:         ":" + port,
+		Addr:         bindAddr,
 		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
