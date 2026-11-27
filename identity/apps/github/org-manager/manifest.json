@@ -16,8 +16,7 @@
     "organization_plan": "read",
     "organization_projects": "write",
     "organization_secrets": "write",
-    "secrets": "write",
-    "team_discussions": "write"
+    "secrets": "write"
   },
   "default_events": []
 }

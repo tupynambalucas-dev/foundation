@@ -63,12 +63,27 @@ export const AppCard: React.FC<{ app: IAppRecord }> = ({ app }) => {
       </div>
 
       <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-        <span className="inline-flex items-center gap-1.5 text-xs font-mono text-emerald-400">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          {app.status}
-        </span>
+        {app.appId === 'Pending Provisioning' ? (
+          <span className="inline-flex items-center gap-1.5 text-xs font-mono text-amber-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+            {app.status}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-xs font-mono text-emerald-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            {app.status}
+          </span>
+        )}
 
-        {app.landingUrl ? (
+        {app.provider === 'github' && app.appId === 'Pending Provisioning' ? (
+          <a
+            href={`/api/github/provision?tier=${encodeURIComponent(app.slug)}`}
+            className="inline-flex items-center gap-1 text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors"
+          >
+            Provisionar (Zero Trust)
+            <ArrowRightIcon size={14} />
+          </a>
+        ) : app.landingUrl ? (
           <Link
             to={app.landingUrl}
             className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"

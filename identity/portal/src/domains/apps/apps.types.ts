@@ -11,7 +11,7 @@ export interface IAppRecord {
   description: string;
   appId?: string;
   clientId?: string;
-  status: 'Ativo em Produção' | 'Homologado' | 'Em Avaliação';
+  status: 'Ativo em Produção' | 'Homologado' | 'Em Avaliação' | 'Pendente de Provisionamento';
   scopes: string[];
   homepageUrl: string;
   landingUrl?: string;

@@ -1,4 +1,5 @@
 import { handleGitHubManifestCallback } from './api/github/callback';
+import { handleGitHubManifestProvision } from './api/github/provision';
 import { handleGitHubWebhook } from './api/github/webhooks';
 import type { PortalEnv } from './api/types';
 
@@ -35,6 +36,11 @@ export default {
 
     if (url.pathname === '/webhooks/github') {
       const res = await handleGitHubWebhook(request, env);
+      return applySecurityHeaders(res);
+    }
+
+    if (url.pathname === '/api/github/provision') {
+      const res = await handleGitHubManifestProvision(request, env);
       return applySecurityHeaders(res);
     }
 

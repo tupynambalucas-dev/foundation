@@ -34,11 +34,49 @@ async function loginUniversalAuth(
 }
 
 /**
+ * Ensures the target secretPath folder hierarchy exists in Infisical Cloud before upserting secrets.
+ * Idempotently ignores HTTP 400/409 responses when a folder segment already exists.
+ */
+async function ensureInfisicalFolder(
+  apiUrl: string,
+  accessToken: string,
+  projectId: string,
+  environment: string,
+  secretPath: string
+): Promise<void> {
+  const segments = secretPath.split('/').filter(Boolean);
+  let currentPath = '/';
+
+  for (const name of segments) {
+    const res = await fetch(`${apiUrl}/api/v1/folders`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        workspaceId: projectId,
+        environment,
+        name,
+        path: currentPath,
+      }),
+    });
+
+    if (!res.ok && res.status !== 400 && res.status !== 409) {
+      throw new Error(`Infisical folder creation failed for '${currentPath}${name}' (HTTP ${res.status}).`);
+    }
+
+    currentPath = currentPath === '/' ? `/${name}` : `${currentPath}/${name}`;
+  }
+}
+
+/**
  * Upserts secrets in Infisical Cloud (creates or updates each secret key without logging values).
  */
 export async function upsertInfisicalSecrets(params: InfisicalUpsertParams): Promise<string[]> {
   const apiUrl = (params.apiUrl || 'https://app.infisical.com').replace(/\/+$/, '');
   const accessToken = await loginUniversalAuth(apiUrl, params.clientId, params.clientSecret);
+  await ensureInfisicalFolder(apiUrl, accessToken, params.projectId, params.environment, params.secretPath);
   const upsertedKeys: string[] = [];
 
   for (const [secretKey, secretValue] of Object.entries(params.secrets)) {
