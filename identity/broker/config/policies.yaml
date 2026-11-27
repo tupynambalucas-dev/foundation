@@ -1,9 +1,10 @@
 # policies.yaml
-# Governança de Políticas de Acesso como Código (Policy-as-Code) do GitHub App Token Broker
-# Mapeia quem pede (subject) para qual identidade (app) e o que pode acessar (repositories e permissions).
+# Policy-as-Code Access Governance for the GitHub App Token Broker.
+# Maps caller identities (subject) to a GitHub App tier (app), allowed repositories,
+# and maximum ceiling permissions for 1-hour downscoped installation access tokens.
 
 policies:
-  # Permissão para runners de CI/CD do GitHub Actions em pipelines corporativos (Tier 2A: automation)
+  # GitHub Actions CI/CD runners in core repositories (Tier 2A: automation)
   - subject: "repo:tupynambalucas-dev/platform:ref:refs/heads/main"
     app: "automation"
     allowed_repositories:
@@ -44,7 +45,7 @@ policies:
       pull_requests: "write"
       packages: "write"
 
-  # Permissão para o motor de avaliação e aprovação de PRs (Tier 2B: guardian - 7 Precondition Gates)
+  # Independent PR Quality Gate Evaluator (Tier 2B: guardian - 7 Precondition Gates)
   - subject: "service:pr-gate-evaluator"
     app: "guardian"
     allowed_repositories:
@@ -64,8 +65,72 @@ policies:
       pull_requests: "write"
       checks: "read"
       statuses: "read"
+      vulnerability_alerts: "read"
+      security_events: "read"
 
-  # Permissão para agentes de engenharia (agent-mesh)
+  # Agent Mesh Governance Plane MCP Server (Tier 1: org-manager)
+  - subject: "agent:mcp-github-governance"
+    app: "org-manager"
+    allowed_repositories:
+      - "*"
+    allowed_permissions:
+      organization_administration: "read"
+      members: "read"
+      administration: "read"
+      metadata: "read"
+      vulnerability_alerts: "read"
+      security_events: "read"
+
+  # Agent Mesh Delivery Plane MCP Server (Tier 2A: automation)
+  - subject: "agent:mcp-github-delivery"
+    app: "automation"
+    allowed_repositories:
+      - "org"
+      - ".github"
+      - ".github-private"
+      - "agent-mesh"
+      - "platform"
+      - "foundation"
+      - "docs"
+      - "ecosystem"
+      - "omnichannel"
+      - "elo-organico"
+      - "tessel"
+    allowed_permissions:
+      contents: "write"
+      pull_requests: "write"
+      issues: "write"
+      checks: "read"
+      statuses: "read"
+      actions: "read"
+      metadata: "read"
+
+  # Agent Mesh Guardian Reviewer Plane (Tier 2B: guardian)
+  - subject: "agent:mcp-github-guardian"
+    app: "guardian"
+    allowed_repositories:
+      - "org"
+      - ".github"
+      - ".github-private"
+      - "agent-mesh"
+      - "platform"
+      - "foundation"
+      - "docs"
+      - "ecosystem"
+      - "omnichannel"
+      - "elo-organico"
+      - "tessel"
+    allowed_permissions:
+      contents: "read"
+      pull_requests: "write"
+      issues: "write"
+      checks: "read"
+      statuses: "read"
+      vulnerability_alerts: "read"
+      security_events: "read"
+      metadata: "read"
+
+  # Legacy autonomous worker subject (Tier 2A: automation)
   - subject: "agent-mesh-autonomous-worker"
     app: "automation"
     allowed_repositories:
@@ -85,11 +150,12 @@ policies:
       pull_requests: "write"
       issues: "write"
 
-  # Permissão para auditoria de vulnerabilidades e segurança (Tier 2B: guardian)
+  # Security & vulnerability auditor (Tier 2B: guardian)
   - subject: "security-auditor"
     app: "guardian"
     allowed_repositories:
       - "*"
     allowed_permissions:
       contents: "read"
+      vulnerability_alerts: "read"
       security_events: "read"
