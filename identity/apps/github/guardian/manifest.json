@@ -4,9 +4,9 @@
   "description": "Autonomous policy enforcement, security compliance auditing, and Pull Request quality gate guardian for tupynambalucas-dev.",
   "hook_attributes": {
     "url": "https://apps.tupynambalucas.dev/webhooks/github",
-    "active": false
+    "active": true
   },
-  "redirect_url": "http://localhost:3333/callback",
+  "redirect_url": "https://apps.tupynambalucas.dev/api/github/callback",
   "public": false,
   "default_permissions": {
     "checks": "read",
@@ -22,6 +22,8 @@
     "pull_request",
     "pull_request_review",
     "check_suite",
-    "check_run"
+    "check_run",
+    "installation",
+    "installation_repositories"
   ]
 }

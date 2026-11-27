@@ -6,13 +6,14 @@
     "url": "https://apps.tupynambalucas.dev/webhooks/github",
     "active": false
   },
-  "redirect_url": "http://localhost:3333/callback",
+  "redirect_url": "https://apps.tupynambalucas.dev/api/github/callback",
   "public": false,
   "default_permissions": {
-    "contents": "read",
+    "contents": "write",
     "metadata": "read",
-    "pull_requests": "read",
-    "issues": "read"
+    "pull_requests": "write",
+    "issues": "write",
+    "workflows": "write"
   },
   "default_events": []
 }
