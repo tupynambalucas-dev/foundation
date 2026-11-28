@@ -1,0 +1,51 @@
+{
+  "provider": "github",
+  "scope": "org",
+  "github": {
+    "name": "tupynambalucas-org-automation",
+    "url": "https://apps.tupynambalucas.dev/apps/org-automation",
+    "hook_attributes": {
+      "url": "https://apps.tupynambalucas.dev/webhooks/github",
+      "active": false
+    },
+    "redirect_url": "https://apps.tupynambalucas.dev/api/github/callback",
+    "public": false,
+    "default_permissions": {
+      "actions": "write",
+      "checks": "write",
+      "contents": "write",
+      "deployments": "write",
+      "issues": "write",
+      "metadata": "read",
+      "packages": "write",
+      "pull_requests": "write",
+      "statuses": "write",
+      "workflows": "write",
+      "attestations": "write"
+    },
+    "default_events": []
+  },
+  "portal": {
+    "order": 2,
+    "tier": "Tier 2",
+    "secretPrefix": "AUTOMATION",
+    "infisicalPath": "/delivery",
+    "fallbackAppId": "5650100",
+    "botUserId": 353557933,
+    "canOpenAutomatedPrs": true,
+    "page": {
+      "subtitle": "Autonomous CI/CD Delivery & Release Automation Identity",
+      "identityType": "GitHub App (Tier 2A — Delivery Plane)",
+      "highlights": [
+        {
+          "title": "Release Please & Package Publishing",
+          "description": "Orquestra PRs de release, tags assinadas, changelogs Docusaurus e publicacao no GitHub Packages com atestacoes SLSA."
+        },
+        {
+          "title": "Separation of Duties (SoD)",
+          "description": "Isolado de administracao organizacional e aprovacao de PRs (delegada exclusivamente ao org-guardian)."
+        }
+      ]
+    }
+  }
+}

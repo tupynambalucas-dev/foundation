@@ -9,9 +9,9 @@
   "scripts": {
     "clean": "rimraf dist tsconfig.tsbuildinfo",
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && tsx ./scripts/prerender.ts",
     "preview": "vite preview",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b && tsc -p tsconfig.scripts.json --noEmit"
   },
   "dependencies": {
     "@tupynambalucas-dev/identity-portal-core": "workspace:*",
@@ -27,6 +27,7 @@
     "@vitejs/plugin-react": "catalog:web-stack",
     "rimraf": "catalog:",
     "tailwindcss": "catalog:web-stack",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:web-stack"
   }

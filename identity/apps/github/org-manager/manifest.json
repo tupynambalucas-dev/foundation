@@ -1,22 +1,47 @@
 {
-  "name": "tupynambalucas-org-manager",
-  "url": "https://apps.tupynambalucas.dev",
-  "description": "### Sovereign Organizational Governance & Machine Identity Operator\n\n`tupynambalucas-org-manager` is the Tier-1 executive machine identity for `tupynambalucas-dev`, providing automated organizational governance, team RBAC orchestration, ruleset administration, and package lifecycle management.\n\n#### Core Responsibilities\n- **RBAC & Team Administration**: Programmatic management of functional teams (`lead-architects`, `security-managers`, `infra-ops`, `core-engineers`) and organization role assignments.\n- **Rulesets & Protection**: Enforcement of branch protection rulesets, release tag protection policies, and Break-Glass governance.\n- **App & Identity Auditing**: Declarative drift detection across the 4-Tier GitHub App suite via `@tupynambalucas-dev/mcp-github-governance`.\n- **Package Governance**: Administrative cleanup and visibility governance on GitHub Packages (`npm.pkg.github.com`).\n- **Secrets & Token Governance**: Centralized management of organization secrets and variables.\n\n#### Custody & Security Architecture\n- **Authentication**: Headless Server-to-Server via 2048-bit RSA Private Key (`.pem`) minting 60-minute downscoped Installation Access Tokens via the Go Token Broker.\n- **Custody**: Strictly restricted to the Organization Owner (`@tupynambalucas-dev`) and `lead-architects`.\n- **Vaulting**: Vaulted in Infisical Cloud (`/governance/`) and scoped GitHub Organization Secrets (`.github`, `org`, `foundation`).\n- **Webhooks**: Disabled (`Active: false`) for outbound-only on-demand governance operations.\n\n> [!NOTE]\n> Automated operations authored by this machine identity carry GitHub's official **Verified** badge under `@tupynambalucas-org-manager[bot]`.",
-  "hook_attributes": {
-    "url": "https://apps.tupynambalucas.dev/webhooks/github",
-    "active": false
+  "provider": "github",
+  "scope": "org",
+  "github": {
+    "name": "tupynambalucas-org-manager",
+    "url": "https://apps.tupynambalucas.dev/apps/org-manager",
+    "hook_attributes": {
+      "url": "https://apps.tupynambalucas.dev/webhooks/github",
+      "active": false
+    },
+    "redirect_url": "https://apps.tupynambalucas.dev/api/github/callback",
+    "public": false,
+    "default_permissions": {
+      "administration": "write",
+      "members": "write",
+      "organization_administration": "write",
+      "organization_custom_roles": "write",
+      "organization_plan": "read",
+      "organization_projects": "write",
+      "organization_secrets": "write",
+      "secrets": "write"
+    },
+    "default_events": []
   },
-  "redirect_url": "https://apps.tupynambalucas.dev/api/github/callback",
-  "public": false,
-  "default_permissions": {
-    "administration": "write",
-    "members": "write",
-    "organization_administration": "write",
-    "organization_custom_roles": "write",
-    "organization_plan": "read",
-    "organization_projects": "write",
-    "organization_secrets": "write",
-    "secrets": "write"
-  },
-  "default_events": []
+  "portal": {
+    "order": 1,
+    "tier": "Tier 1",
+    "secretPrefix": "ORG_MANAGER",
+    "infisicalPath": "/governance",
+    "fallbackAppId": "5648756",
+    "botUserId": 353527435,
+    "page": {
+      "subtitle": "Sovereign Organizational Governance & Machine Identity Operator",
+      "identityType": "GitHub App (Tier 1 — Executive Governance Plane)",
+      "highlights": [
+        {
+          "title": "RBAC & Team Administration",
+          "description": "Gerenciamento programatico de times funcionais (lead-architects, security-managers, infra-ops, core-engineers) e regras organizacionais."
+        },
+        {
+          "title": "Custody & Vaulting (/governance)",
+          "description": "Chave RSA 2048-bit isolada no Infisical Cloud e Go Token Broker com tokens efemeros de 60 minutos."
+        }
+      ]
+    }
+  }
 }

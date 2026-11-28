@@ -7,8 +7,8 @@ export const Header: React.FC = () => {
 
   const navItems = [
     { label: 'Catálogo de Apps', to: '/' },
-    { label: 'Rclone Desktop', to: '/rclone' },
-    { label: 'Workspace Automation', to: '/workspace' },
+    { label: 'Org Workspace', to: '/apps/org-workspace' },
+    { label: 'Org Guardian', to: '/apps/org-guardian' },
     { label: 'Privacidade', to: '/privacy' },
     { label: 'Termos de Serviço', to: '/terms' },
   ];

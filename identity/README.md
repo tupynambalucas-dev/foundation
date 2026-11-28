@@ -21,9 +21,8 @@ Sovereign Layer-2 bounded context consolidating 4-Tier GitHub App declarative ma
 | **3** | [`portal/core/`](./portal/core/) | `@tupynambalucas-dev/identity-portal-core` | [`portal/core/README.md`](./portal/core/README.md) | [`portal/core/AGENTS.md`](./portal/core/AGENTS.md) | Shared TypeScript contracts, live app status types, and route constants. |
 | **3** | [`portal/web/`](./portal/web/) | `@tupynambalucas-dev/identity-portal-web` | [`portal/web/README.md`](./portal/web/README.md) | [`portal/web/AGENTS.md`](./portal/web/AGENTS.md) | React 19 + Vite + Tailwind FSD SPA with live `/api/apps/status` hydration. |
 | **3** | [`portal/api/`](./portal/api/) | `@tupynambalucas-dev/identity-portal-api` | [`portal/api/README.md`](./portal/api/README.md) | [`portal/api/AGENTS.md`](./portal/api/AGENTS.md) | Cloudflare Worker, Workflows, Zero Trust Manifest Flow, and Infisical callback. |
-| **Asset** | `apps/github/` | Declarative Manifests | — | Governed by [`AGENTS.md`](./AGENTS.md) | 4-Tier GitHub App manifests (`org-manager`, `automation`, `guardian`, `developer-tools`). |
-| **Asset** | `apps/gcloud/` | Identity Specs | — | Governed by [`AGENTS.md`](./AGENTS.md) | Google Cloud OAuth and Service Account specifications (`drive-rclone`, `workspace-automation`). |
-| **Asset** | [`compliance/`](./compliance/) | Legal Assets | [`compliance/README.md`](./compliance/README.md) | Governed by [`AGENTS.md`](./AGENTS.md) | Privacy Policy and Terms of Service for OAuth brand verification. |
+| **Asset** | `apps/github/` | Declarative Manifests | — | Governed by [`AGENTS.md`](./AGENTS.md) | 4-Tier GitHub App manifests (`org-manager`, `org-automation`, `org-guardian`, `developer-tools`). |
+| **Asset** | `apps/gcloud/` | Identity Specs | — | Governed by [`AGENTS.md`](./AGENTS.md) | Unified organizational Google Cloud & Workspace identity (`org-workspace`). |
 
 ---
 
@@ -32,13 +31,12 @@ Sovereign Layer-2 bounded context consolidating 4-Tier GitHub App declarative ma
 ```text
 identity/
 ├── apps/
-│   ├── github/                 # org-manager/, automation/, guardian/, developer-tools/ (manifest.json)
-│   └── gcloud/                 # drive-rclone/, workspace-automation/
+│   ├── github/                 # org-manager/, org-automation/, org-guardian/, developer-tools/ (manifest.json + description.md + README.md)
+│   └── gcloud/                 # org-workspace/ (manifest.json + description.md + README.md)
 ├── broker/                     # Go Token Broker STS (go.mod, cmd/broker/, config/policies.yaml)
-├── compliance/                 # privacy-policy.html, terms-of-service.html
 ├── portal/
-│   ├── core/                   # Shared TS contracts (@tupynambalucas-dev/identity-portal-core)
-│   ├── web/                    # React SPA (@tupynambalucas-dev/identity-portal-web)
+│   ├── core/                   # Zod v4 SSOT contracts, compliance & codegen (@tupynambalucas-dev/identity-portal-core)
+│   ├── web/                    # React 19 SSG + SPA (@tupynambalucas-dev/identity-portal-web)
 │   └── api/                    # Cloudflare Worker + Workflows (@tupynambalucas-dev/identity-portal-api)
 ├── AGENTS.md                   # Layer-2 bounded context router
 └── README.md                   # Subsystem documentation

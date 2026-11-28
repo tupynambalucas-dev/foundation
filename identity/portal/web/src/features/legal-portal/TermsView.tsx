@@ -1,5 +1,5 @@
 import React from 'react';
-import { TERMS_CONTENT } from '@/domains/compliance/terms.content';
+import { TERMS_CONTENT } from '@tupynambalucas-dev/identity-portal-core';
 import { Link } from '@/shared/router/useRouter';
 import { FileTextIcon } from '@/shared/ui/Icons';
 import { Badge } from '@/shared/ui/Badge';

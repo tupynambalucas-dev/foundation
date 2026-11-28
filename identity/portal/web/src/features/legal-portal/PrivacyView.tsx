@@ -1,5 +1,5 @@
 import React from 'react';
-import { PRIVACY_CONTENT } from '@/domains/compliance/privacy.content';
+import { PRIVACY_CONTENT } from '@tupynambalucas-dev/identity-portal-core';
 import { Link } from '@/shared/router/useRouter';
 import { ShieldCheckIcon, FileTextIcon } from '@/shared/ui/Icons';
 import { Badge } from '@/shared/ui/Badge';

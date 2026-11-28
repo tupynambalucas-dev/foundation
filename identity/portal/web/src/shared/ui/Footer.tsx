@@ -47,13 +47,13 @@ export const Footer: React.FC = () => {
             <h4 className="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold mb-3">Ecossistema</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/rclone" className="text-slate-400 hover:text-slate-200 transition-colors">
-                  Rclone Desktop Client
+                <Link to="/apps/org-workspace" className="text-slate-400 hover:text-slate-200 transition-colors">
+                  tupynambalucas-org-workspace
                 </Link>
               </li>
               <li>
-                <Link to="/workspace" className="text-slate-400 hover:text-slate-200 transition-colors">
-                  Workspace Automation
+                <Link to="/apps/org-guardian" className="text-slate-400 hover:text-slate-200 transition-colors">
+                  tupynambalucas-org-guardian
                 </Link>
               </li>
               <li>

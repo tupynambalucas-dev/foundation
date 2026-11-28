@@ -6,5 +6,5 @@
     "types": ["node"],
     "ignoreDeprecations": "6.0"
   },
-  "include": ["scripts", "src/apps.types.ts", "src/routes.ts"]
+  "include": ["scripts", "src/schemas", "src/apps.types.ts", "src/routes.ts"]
 }

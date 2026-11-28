@@ -185,6 +185,10 @@ catalogs:
     wrangler:
       specifier: ^4.165.0
       version: 4.165.0
+  shared-stack:
+    zod:
+      specifier: ^4.6.5
+      version: 4.6.7
   tooling-stack:
     '@eslint/js':
       specifier: 10.0.1
@@ -330,6 +334,10 @@ importers:
         version: 4.165.0(@cloudflare/workers-types@4.20260702.1)(@types/node@26.6.6)
 
   identity/portal/core:
+    dependencies:
+      zod:
+        specifier: catalog:shared-stack
+        version: 4.6.7
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -380,6 +388,9 @@ importers:
       tailwindcss:
         specifier: catalog:web-stack
         version: 4.3.5
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.15
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -2170,6 +2181,9 @@ packages:
   youch@4.1.0-beta.10:
     resolution: {integrity: sha512-rLfVLB4FgQneDr0dv1oddCVZmKjcJ6yX6mS4pU82Mq/Dt9a3cLZQ62pDBL4AUO+uVrCvtWz3ZFUL2HFAFJ/BXQ==}
 
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
+
 snapshots:
 
   '@babel/code-frame@7.29.7':
@@ -3748,3 +3762,5 @@ snapshots:
       '@speed-highlight/core': 1.2.24
       cookie: 1.1.1
       youch-core: 0.3.3
+
+  zod@4.6.7: {}

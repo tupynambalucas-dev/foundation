@@ -48,16 +48,16 @@ export const AppCatalogView: React.FC = () => {
             Política de Privacidade Canônica
           </Link>
           <Link
-            to="/rclone"
+            to="/apps/org-workspace"
             className="px-4 py-2 rounded-lg text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-colors"
           >
-            Rclone Desktop Client
+            Org Workspace (Google Cloud)
           </Link>
           <Link
-            to="/workspace"
+            to="/apps/org-guardian"
             className="px-4 py-2 rounded-lg text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-colors"
           >
-            Workspace Automation
+            Org Guardian (7-Gate PR)
           </Link>
         </div>
       </div>

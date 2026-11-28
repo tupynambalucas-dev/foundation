@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  AUTHORIZED_BOT_LOGINS,
+  AUTHORIZED_BOT_USER_IDS,
   GITHUB_APP_TIERS,
   GITHUB_MANIFESTS_BY_SLUG,
+  GUARDIAN_BOT_USER_IDS,
   PORTAL_APPS_CATALOG,
 } from '@tupynambalucas-dev/identity-portal-core';
 import type { PortalEnv, PrGateParams } from '../types';
@@ -13,6 +16,7 @@ import {
   evaluateBotFileConfinement,
   evaluateRbacGate,
   evaluateSemanticGate,
+  isBotAuthor,
 } from './gates';
 import {
   buildWorkflowInstanceId,
@@ -103,10 +107,13 @@ describe('Cloudflare Portal Signature & Workflow Instance ID', () => {
 });
 
 describe('7-Gate Pure Quality Evaluators', () => {
-  it('enforces Gate 3 RBAC allowlist and blocks external contractors', () => {
-    assert.equal(evaluateRbacGate('tupynambalucas').passed, true);
-    assert.equal(evaluateRbacGate('tupynambalucas-automation[bot]').passed, true);
-    assert.equal(evaluateRbacGate('external-contractor').passed, false);
+  it('enforces Gate 3 RBAC allowlist by immutable ID and SSOT login, blocking external contractors', () => {
+    const automationBotLogin = AUTHORIZED_BOT_LOGINS.find((l) => l !== 'dependabot[bot]')!;
+    assert.equal(evaluateRbacGate('tupynambalucas', 53620332).passed, true);
+    assert.equal(evaluateRbacGate(automationBotLogin).passed, true);
+    assert.equal(evaluateRbacGate('any-renamed-future-name[bot]', 353557933).passed, true);
+    assert.equal(isBotAuthor('any-renamed-future-name', 'Bot', 353557933), true);
+    assert.equal(evaluateRbacGate('external-contractor', 99999999).passed, false);
   });
 
   it('enforces Gate 5 Conventional Commits and Zero-Emoji invariant', () => {
@@ -129,8 +136,9 @@ describe('7-Gate Pure Quality Evaluators', () => {
   });
 
   it('enforces Gate 7 bot file confinement allowlist', () => {
+    const automationBotLogin = AUTHORIZED_BOT_LOGINS.find((l) => l !== 'dependabot[bot]')!;
     assert.equal(
-      evaluateBotFileConfinement('tupynambalucas-automation[bot]', [
+      evaluateBotFileConfinement(automationBotLogin, [
         'CHANGELOG.md',
         'package.json',
         '.release-please-manifest.json',
@@ -138,7 +146,7 @@ describe('7-Gate Pure Quality Evaluators', () => {
       true
     );
     assert.equal(
-      evaluateBotFileConfinement('tupynambalucas-automation[bot]', [
+      evaluateBotFileConfinement(automationBotLogin, [
         'CHANGELOG.md',
         'src/worker.ts',
       ]).passed,
@@ -255,7 +263,7 @@ describe('HTTP Handlers (Webhooks & Manifest Callback)', () => {
       CF_ACCESS_AUD: 'test-aud-tag',
     });
     const noAccessRes = await handleGitHubManifestProvision(
-      new Request('https://apps.tupynambalucas.dev/api/github/provision?tier=guardian'),
+      new Request('https://apps.tupynambalucas.dev/api/github/provision?tier=org-guardian'),
       envWithAccess
     );
     assert.equal(noAccessRes.status, 403);
@@ -268,27 +276,27 @@ describe('HTTP Handlers (Webhooks & Manifest Callback)', () => {
     assert.equal(invalidTierRes.status, 400);
 
     const okRes = await handleGitHubManifestProvision(
-      new Request('https://apps.tupynambalucas.dev/api/github/provision?tier=guardian'),
+      new Request('https://apps.tupynambalucas.dev/api/github/provision?tier=org-guardian'),
       envNoAccess
     );
     assert.equal(okRes.status, 200);
     assert.match(okRes.headers.get('Content-Type') || '', /text\/html/);
     const html = await okRes.text();
     assert.match(html, /https:\/\/github\.com\/organizations\/tupynambalucas-dev\/settings\/apps\/new\?state=/);
-    assert.match(html, /tupynambalucas-guardian/);
+    assert.match(html, /tupynambalucas-org-guardian/);
     assert.match(html, /https:\/\/apps\.tupynambalucas\.dev\/api\/github\/callback/);
   });
 
   it('returns live provisioned and pending states from GET /api/apps/status', async () => {
     const mockFetch: typeof fetch = async (input) => {
       const url = String(input);
-      if (url.endsWith('/tupynambalucas-guardian')) {
-        return new Response(JSON.stringify({ id: 5959745, html_url: 'https://github.com/apps/tupynambalucas-guardian' }), {
+      if (url.endsWith('/tupynambalucas-org-guardian')) {
+        return new Response(JSON.stringify({ id: 5959745, html_url: 'https://github.com/apps/tupynambalucas-org-guardian' }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      if (url.endsWith('/tupynambalucas-automation')) {
+      if (url.endsWith('/tupynambalucas-org-automation')) {
         return new Response(JSON.stringify({ message: 'Not Found' }), { status: 404 });
       }
       return new Response(JSON.stringify({ id: 5648756, html_url: 'https://github.com/apps/tupynambalucas-org-manager' }), {
@@ -305,33 +313,43 @@ describe('HTTP Handlers (Webhooks & Manifest Callback)', () => {
     assert.equal(res.status, 200);
     assert.match(res.headers.get('Cache-Control') || '', /max-age=60/);
     const data = (await res.json()) as { apps: Array<{ slug: string; provisioned: boolean; appId: string | null }> };
-    const guardian = data.apps.find((a) => a.slug === 'guardian');
-    const automation = data.apps.find((a) => a.slug === 'automation');
+    const guardian = data.apps.find((a) => a.slug === 'org-guardian');
+    const automation = data.apps.find((a) => a.slug === 'org-automation');
     assert.equal(guardian?.provisioned, true);
     assert.equal(guardian?.appId, '5959745');
     assert.equal(automation?.provisioned, false);
     assert.equal(automation?.appId, null);
   });
 
-  it('auto-discovers all GitHub and Google apps with accurate manifest scopes and vault mappings', () => {
-    assert.ok(GITHUB_APP_TIERS.length >= 4);
+  it('auto-discovers all GitHub and Google apps with accurate manifest scopes, immutable IDs, and pure GitHub projection', () => {
+    assert.equal(GITHUB_APP_TIERS.length, 4);
     assert.equal(Object.keys(GITHUB_MANIFESTS_BY_SLUG).length, GITHUB_APP_TIERS.length);
+    assert.ok(AUTHORIZED_BOT_USER_IDS.includes(353557933));
+    assert.ok(GUARDIAN_BOT_USER_IDS.includes(362146655));
 
-    const guardianTier = GITHUB_APP_TIERS.find((t) => t.slug === 'guardian');
-    assert.equal(guardianTier?.name, 'tupynambalucas-guardian');
+    const guardianTier = GITHUB_APP_TIERS.find((t) => t.slug === 'org-guardian');
+    assert.equal(guardianTier?.name, 'tupynambalucas-org-guardian');
     assert.equal(guardianTier?.secretPrefix, 'GUARDIAN');
     assert.equal(guardianTier?.infisicalPath, '/protection');
+    assert.equal(guardianTier?.botUserId, 362146655);
 
-    const guardianCatalog = PORTAL_APPS_CATALOG.find((a) => a.slug === 'guardian');
+    const guardianCatalog = PORTAL_APPS_CATALOG.find((a) => a.slug === 'org-guardian');
+    assert.equal(guardianCatalog?.landingUrl, '/apps/org-guardian');
     assert.ok(guardianCatalog?.scopes.includes('contents:write'));
     assert.ok(!guardianCatalog?.scopes.includes('contents:read'));
 
     const gcloudApps = PORTAL_APPS_CATALOG.filter((a) => a.provider !== 'github');
-    assert.ok(gcloudApps.length >= 2);
-    assert.ok(gcloudApps.some((a) => a.slug === 'drive-rclone'));
-    assert.ok(gcloudApps.some((a) => a.slug === 'workspace-automation'));
+    assert.equal(gcloudApps.length, 1);
+    assert.equal(gcloudApps[0]?.slug, 'org-workspace');
+    assert.equal(gcloudApps[0]?.landingUrl, '/apps/org-workspace');
+    assert.ok(gcloudApps[0]?.scopes.includes('https://www.googleapis.com/auth/drive'));
+    assert.ok(gcloudApps[0]?.scopes.includes('https://www.googleapis.com/auth/spreadsheets'));
 
     for (const manifest of Object.values(GITHUB_MANIFESTS_BY_SLUG)) {
+      assert.equal('portal' in manifest, false);
+      assert.equal('provider' in manifest, false);
+      assert.equal(typeof manifest.description, 'string');
+      assert.ok(String(manifest.description).includes('###'));
       const perms = (manifest.default_permissions || {}) as Record<string, string>;
       const events = (manifest.default_events || []) as string[];
       assert.equal('team_discussions' in perms, false);

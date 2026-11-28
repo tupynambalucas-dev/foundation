@@ -22,6 +22,9 @@
     "pretypecheck": "pnpm run generate",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit"
   },
+  "dependencies": {
+    "zod": "catalog:shared-stack"
+  },
   "devDependencies": {
     "@types/node": "catalog:",
     "rimraf": "catalog:",

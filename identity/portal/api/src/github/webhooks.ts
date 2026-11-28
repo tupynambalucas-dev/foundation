@@ -1,51 +1,14 @@
+import {
+  CheckWebhookPayloadSchema,
+  InstallationWebhookPayloadSchema,
+  PullRequestWebhookPayloadSchema,
+} from '@tupynambalucas-dev/identity-portal-core';
 import type { PortalEnv, PrGateParams } from '../types';
 import { sendMagicLinkAlert } from '../notifications/magic-link';
 import { buildWorkflowInstanceId, verifyGitHubWebhookSignature } from './signature';
 
 const TRIGGER_PR_ACTIONS = new Set(['opened', 'synchronize', 'reopened', 'edited', 'ready_for_review']);
 const ALLOWED_CHECK_CONCLUSIONS = new Set(['success', 'neutral', 'skipped']);
-
-interface PullRequestWebhookPayload {
-  action?: string;
-  repository?: {
-    name?: string;
-    owner?: { login?: string };
-  };
-  pull_request?: {
-    number?: number;
-    draft?: boolean;
-    title?: string;
-    body?: string | null;
-    head?: { sha?: string };
-    user?: { login?: string };
-  };
-}
-
-interface CheckWebhookPayload {
-  action?: string;
-  repository?: {
-    name?: string;
-    owner?: { login?: string };
-  };
-  check_suite?: {
-    head_sha?: string;
-    conclusion?: string | null;
-    pull_requests?: Array<{ number?: number }>;
-  };
-  check_run?: {
-    head_sha?: string;
-    conclusion?: string | null;
-    pull_requests?: Array<{ number?: number }>;
-  };
-}
-
-interface InstallationWebhookPayload {
-  action?: string;
-  installation?: {
-    id?: number;
-    app_slug?: string;
-  };
-}
 
 async function enqueuePrWorkflow(
   env: PortalEnv,
@@ -79,7 +42,7 @@ async function enqueuePrWorkflow(
 }
 
 /**
- * Handles POST /webhooks/github with strict constant-time HMAC-SHA256 verification.
+ * Handles POST /webhooks/github with strict constant-time HMAC-SHA256 verification and Zod payload parsing.
  */
 export async function handleGitHubWebhook(request: Request, env: PortalEnv): Promise<Response> {
   if (request.method !== 'POST') {
@@ -113,7 +76,11 @@ export async function handleGitHubWebhook(request: Request, env: PortalEnv): Pro
   }
 
   if (eventType === 'pull_request') {
-    const prEvent = payload as PullRequestWebhookPayload;
+    const parsed = PullRequestWebhookPayloadSchema.safeParse(payload);
+    if (!parsed.success) {
+      return Response.json({ error: 'Invalid pull_request webhook payload.' }, { status: 400 });
+    }
+    const prEvent = parsed.data;
     if (!prEvent.action || !TRIGGER_PR_ACTIONS.has(prEvent.action)) {
       return Response.json({ ignored: true, reason: `PR action '${prEvent.action || ''}' ignored.` }, { status: 200 });
     }
@@ -130,6 +97,8 @@ export async function handleGitHubWebhook(request: Request, env: PortalEnv): Pro
       pullNumber: pr.number,
       headSha: pr.head.sha,
       authorLogin: pr.user?.login || 'unknown',
+      ...(typeof pr.user?.id === 'number' ? { authorId: pr.user.id } : {}),
+      ...(pr.user?.type ? { authorType: pr.user.type } : {}),
       title: pr.title || '',
       body: pr.body || '',
       deliveryId,
@@ -138,7 +107,11 @@ export async function handleGitHubWebhook(request: Request, env: PortalEnv): Pro
   }
 
   if (eventType === 'check_suite' || eventType === 'check_run') {
-    const checkEvent = payload as CheckWebhookPayload;
+    const parsed = CheckWebhookPayloadSchema.safeParse(payload);
+    if (!parsed.success) {
+      return Response.json({ error: `Invalid ${eventType} webhook payload.` }, { status: 400 });
+    }
+    const checkEvent = parsed.data;
     const node = eventType === 'check_suite' ? checkEvent.check_suite : checkEvent.check_run;
     if (
       checkEvent.action !== 'completed' ||
@@ -160,7 +133,11 @@ export async function handleGitHubWebhook(request: Request, env: PortalEnv): Pro
   }
 
   if (eventType === 'installation' || eventType === 'installation_repositories') {
-    const instEvent = payload as InstallationWebhookPayload;
+    const parsed = InstallationWebhookPayloadSchema.safeParse(payload);
+    if (!parsed.success) {
+      return Response.json({ error: `Invalid ${eventType} webhook payload.` }, { status: 400 });
+    }
+    const instEvent = parsed.data;
     await sendMagicLinkAlert(env.ALERT_WEBHOOK_URL, {
       title: `GitHub App ${instEvent.installation?.app_slug || 'unknown'} (${instEvent.action || 'updated'})`,
       summary: `Installation ID ${instEvent.installation?.id || 'n/a'} triggered '${eventType}.${instEvent.action || ''}'.`,

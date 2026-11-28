@@ -1,8 +1,0 @@
-{
-  "order": 3,
-  "tier": "Tier 2",
-  "summary": "Plano de Proteção, Auditoria e Governança (SoD). Avalia os 7 Quality Gates, assinaturas SSH, commits semânticos e confinamento de arquivos para aprovação formal de PRs.",
-  "secretPrefix": "GUARDIAN",
-  "infisicalPath": "/protection",
-  "fallbackAppId": "5959745"
-}

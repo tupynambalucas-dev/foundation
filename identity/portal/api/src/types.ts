@@ -21,6 +21,8 @@ export interface PrGateParams {
   pullNumber: number;
   headSha: string;
   authorLogin: string;
+  authorId?: number;
+  authorType?: string;
   title: string;
   body: string;
   deliveryId: string;

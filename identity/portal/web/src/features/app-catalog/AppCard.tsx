@@ -62,7 +62,7 @@ export const AppCard: React.FC<{ app: IAppRecord }> = ({ app }) => {
         </div>
       </div>
 
-      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-2">
         {app.appId === 'Pending Provisioning' ? (
           <span className="inline-flex items-center gap-1.5 text-xs font-mono text-amber-400">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -75,15 +75,16 @@ export const AppCard: React.FC<{ app: IAppRecord }> = ({ app }) => {
           </span>
         )}
 
-        {app.provider === 'github' && app.appId === 'Pending Provisioning' ? (
-          <a
-            href={`/api/github/provision?tier=${encodeURIComponent(app.slug)}`}
-            className="inline-flex items-center gap-1 text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors"
-          >
-            Provisionar (Zero Trust)
-            <ArrowRightIcon size={14} />
-          </a>
-        ) : app.landingUrl ? (
+        <div className="flex items-center gap-3">
+          {app.provider === 'github' && app.appId === 'Pending Provisioning' && (
+            <a
+              href={`/api/github/provision?tier=${encodeURIComponent(app.slug)}`}
+              className="inline-flex items-center gap-1 text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              Provisionar
+              <ArrowRightIcon size={14} />
+            </a>
+          )}
           <Link
             to={app.landingUrl}
             className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
@@ -91,9 +92,7 @@ export const AppCard: React.FC<{ app: IAppRecord }> = ({ app }) => {
             Ver Detalhes
             <ArrowRightIcon size={14} />
           </Link>
-        ) : (
-          <span className="text-xs font-mono text-slate-500">SSOT Registrado</span>
-        )}
+        </div>
       </div>
     </div>
   );

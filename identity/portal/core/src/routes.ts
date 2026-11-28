@@ -1,3 +1,5 @@
+export type { IGitHubAppTierSpec } from './schemas/app.schema';
+
 export const GITHUB_ORG_SLUG = 'tupynambalucas-dev';
 
 export const PORTAL_API_ROUTES = {
@@ -7,10 +9,3 @@ export const PORTAL_API_ROUTES = {
   githubCallback: '/api/github/callback',
   githubWebhook: '/webhooks/github',
 } as const;
-
-export interface IGitHubAppTierSpec {
-  slug: string;
-  name: string;
-  secretPrefix: string;
-  infisicalPath: string;
-}

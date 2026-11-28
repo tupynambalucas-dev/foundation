@@ -1,5 +1,9 @@
 import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from 'cloudflare:workers';
 import { NonRetryableError } from 'cloudflare:workflows';
+import {
+  GUARDIAN_BOT_LOGINS,
+  GUARDIAN_BOT_USER_IDS,
+} from '@tupynambalucas-dev/identity-portal-core';
 import type { GateOutcome, PortalEnv, PrGateEvaluationResult, PrGateParams } from '../types';
 import {
   evaluateBotFileConfinement,
@@ -40,6 +44,7 @@ interface ReviewEntry {
   state: string;
   commit_id?: string;
   user?: {
+    id?: number;
     login?: string;
   };
 }
@@ -99,7 +104,7 @@ export class PrGateEvaluatorWorkflow extends WorkflowEntrypoint<PortalEnv, PrGat
     event: WorkflowEvent<PrGateParams>,
     step: WorkflowStep
   ): Promise<PrGateEvaluationResult> {
-    const { owner, repo, pullNumber, headSha, authorLogin, title, body } = event.payload;
+    const { owner, repo, pullNumber, headSha, authorLogin, authorId, authorType, title, body } = event.payload;
     const repoBase = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
 
     // Gate 1: Status Checks Green with durable polling (deterministic indexed step names)
@@ -171,7 +176,7 @@ export class PrGateEvaluatorWorkflow extends WorkflowEntrypoint<PortalEnv, PrGat
     });
 
     // Gate 3 (RBAC) & Gate 5 (Conventional Commits + Zero-Emoji) - pure deterministic evaluation
-    const rbacGate = evaluateRbacGate(authorLogin);
+    const rbacGate = evaluateRbacGate(authorLogin, authorId);
     const semanticGate = evaluateSemanticGate(title, body, commitsAudit.headlines);
 
     // Gate 4 (Zero New High/Critical Security Alerts)
@@ -211,7 +216,7 @@ export class PrGateEvaluatorWorkflow extends WorkflowEntrypoint<PortalEnv, PrGat
       passed: true,
       reason: 'Human author: bot file confinement not applicable.',
     };
-    if (isBotAuthor(authorLogin)) {
+    if (isBotAuthor(authorLogin, authorType, authorId)) {
       botConfinementGate = await step.do('evaluate-gate-7-bot-confinement', async () => {
         const token = await this.getScopedToken(repo);
         const files = await this.githubJson<PullFileEntry[]>(
@@ -220,7 +225,9 @@ export class PrGateEvaluatorWorkflow extends WorkflowEntrypoint<PortalEnv, PrGat
         );
         return evaluateBotFileConfinement(
           authorLogin,
-          files.map((f) => f.filename)
+          files.map((f) => f.filename),
+          authorType,
+          authorId
         );
       });
     }
@@ -260,7 +267,8 @@ export class PrGateEvaluatorWorkflow extends WorkflowEntrypoint<PortalEnv, PrGat
         (r) =>
           r.state === 'APPROVED' &&
           r.commit_id === headSha &&
-          (r.user?.login === 'tupynambalucas-guardian[bot]' || r.user?.login === 'tupynambalucas-guardian')
+          ((typeof r.user?.id === 'number' && GUARDIAN_BOT_USER_IDS.includes(r.user.id)) ||
+            (typeof r.user?.login === 'string' && GUARDIAN_BOT_LOGINS.includes(r.user.login)))
       );
       if (alreadyApproved) {
         return { approved: true, alreadyApproved: true };

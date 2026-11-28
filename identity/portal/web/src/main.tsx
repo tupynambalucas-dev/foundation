@@ -6,9 +6,15 @@ import './main.css';
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(
+  const appNode = (
     <React.StrictMode>
       <App />
     </React.StrictMode>
   );
+
+  if (rootElement.hasChildNodes()) {
+    ReactDOM.hydrateRoot(rootElement, appNode);
+  } else {
+    ReactDOM.createRoot(rootElement).render(appNode);
+  }
 }
