@@ -37,7 +37,7 @@ export default {
     }
 
     if (url.pathname === PORTAL_API_ROUTES.appsStatus) {
-      const res = await handleAppsStatus(request);
+      const res = await handleAppsStatus(request, env);
       return applySecurityHeaders(res);
     }
 
