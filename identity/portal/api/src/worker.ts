@@ -1,9 +1,11 @@
-import { handleGitHubManifestCallback } from './api/github/callback';
-import { handleGitHubManifestProvision } from './api/github/provision';
-import { handleGitHubWebhook } from './api/github/webhooks';
-import type { PortalEnv } from './api/types';
+import { PORTAL_API_ROUTES } from '@tupynambalucas-dev/identity-portal-core';
+import { handleAppsStatus } from './github/apps-status';
+import { handleGitHubManifestCallback } from './github/callback';
+import { handleGitHubManifestProvision } from './github/provision';
+import { handleGitHubWebhook } from './github/webhooks';
+import type { PortalEnv } from './types';
 
-export { PrGateEvaluatorWorkflow } from './api/workflows/pr-gate-evaluator';
+export { PrGateEvaluatorWorkflow } from './workflows/pr-gate-evaluator';
 
 function applySecurityHeaders(response: Response): Response {
   const newHeaders = new Headers(response.headers);
@@ -24,7 +26,7 @@ export default {
   async fetch(request: Request, env: PortalEnv): Promise<Response> {
     const url = new URL(request.url);
 
-    if (url.pathname === '/api/health') {
+    if (url.pathname === PORTAL_API_ROUTES.health) {
       return applySecurityHeaders(
         Response.json({
           status: 'ok',
@@ -34,22 +36,27 @@ export default {
       );
     }
 
-    if (url.pathname === '/webhooks/github') {
+    if (url.pathname === PORTAL_API_ROUTES.appsStatus) {
+      const res = await handleAppsStatus(request);
+      return applySecurityHeaders(res);
+    }
+
+    if (url.pathname === PORTAL_API_ROUTES.githubWebhook) {
       const res = await handleGitHubWebhook(request, env);
       return applySecurityHeaders(res);
     }
 
-    if (url.pathname === '/api/github/provision') {
+    if (url.pathname === PORTAL_API_ROUTES.githubProvision) {
       const res = await handleGitHubManifestProvision(request, env);
       return applySecurityHeaders(res);
     }
 
-    if (url.pathname === '/api/github/callback') {
+    if (url.pathname === PORTAL_API_ROUTES.githubCallback) {
       const res = await handleGitHubManifestCallback(request, env);
       return applySecurityHeaders(res);
     }
 
-    // Fallback to static SPA assets (public/_headers applies on direct edge hits)
+    // Fallback to static SPA assets built by identity/portal/web (../web/dist)
     const assetResponse = await env.ASSETS.fetch(request);
     return applySecurityHeaders(assetResponse);
   },

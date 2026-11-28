@@ -1,0 +1,28 @@
+{
+  "name": "@tupynambalucas-dev/identity-portal-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Workers, Workflows, Zero Trust Manifest Flow, and live GitHub App status edge backend for apps.tupynambalucas.dev.",
+  "author": "Tupynamba Lucas Varela Rodrigues <tupynambalucas.dev>",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf tsconfig.tsbuildinfo",
+    "cf-typegen": "wrangler types",
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "test": "node --import tsx --test src/**/*.test.ts",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@tupynambalucas-dev/identity-portal-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@types/node": "catalog:",
+    "rimraf": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

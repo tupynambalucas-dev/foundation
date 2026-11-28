@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { PortalEnv, PrGateParams } from '../types';
+import { handleAppsStatus } from './apps-status';
 import { handleGitHubManifestCallback } from './callback';
 import { handleGitHubManifestProvision } from './provision';
 import {
@@ -271,5 +272,38 @@ describe('HTTP Handlers (Webhooks & Manifest Callback)', () => {
     assert.match(html, /https:\/\/github\.com\/organizations\/tupynambalucas-dev\/settings\/apps\/new\?state=/);
     assert.match(html, /tupynambalucas-guardian/);
     assert.match(html, /https:\/\/apps\.tupynambalucas\.dev\/api\/github\/callback/);
+  });
+
+  it('returns live provisioned and pending states from GET /api/apps/status', async () => {
+    const mockFetch: typeof fetch = async (input) => {
+      const url = String(input);
+      if (url.endsWith('/tupynambalucas-guardian')) {
+        return new Response(JSON.stringify({ id: 5959745, html_url: 'https://github.com/apps/tupynambalucas-guardian' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.endsWith('/tupynambalucas-automation')) {
+        return new Response(JSON.stringify({ message: 'Not Found' }), { status: 404 });
+      }
+      return new Response(JSON.stringify({ id: 5648756, html_url: 'https://github.com/apps/tupynambalucas-org-manager' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    const res = await handleAppsStatus(
+      new Request('https://apps.tupynambalucas.dev/api/apps/status'),
+      mockFetch
+    );
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get('Cache-Control') || '', /max-age=60/);
+    const data = (await res.json()) as { apps: Array<{ slug: string; provisioned: boolean; appId: string | null }> };
+    const guardian = data.apps.find((a) => a.slug === 'guardian');
+    const automation = data.apps.find((a) => a.slug === 'automation');
+    assert.equal(guardian?.provisioned, true);
+    assert.equal(guardian?.appId, '5959745');
+    assert.equal(automation?.provisioned, false);
+    assert.equal(automation?.appId, null);
   });
 });

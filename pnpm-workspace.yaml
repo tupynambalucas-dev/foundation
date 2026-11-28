@@ -12,7 +12,7 @@ allowBuilds:
 packages:
   - 'distributions'
   - 'virtualization'
-  - 'identity/portal'
+  - 'identity/portal/*'
   - 'environment'
   - 'extensions/*'
 

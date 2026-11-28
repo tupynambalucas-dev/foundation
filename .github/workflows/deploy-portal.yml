@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "identity/portal/**"
+      - "identity/apps/github/**"
       - ".github/workflows/deploy-portal.yml"
   workflow_dispatch:
 
@@ -32,14 +33,21 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build Identity Portal (React + Vite)
-        run: pnpm --filter @tupynambalucas-dev/identity-portal build
+      - name: Build Shared Core & Web Frontend (React + Vite)
+        run: |
+          pnpm --filter @tupynambalucas-dev/identity-portal-core build
+          pnpm --filter @tupynambalucas-dev/identity-portal-web build
+
+      - name: Test & Typecheck Edge Worker API
+        run: |
+          pnpm --filter @tupynambalucas-dev/identity-portal-api test
+          pnpm --filter @tupynambalucas-dev/identity-portal-api typecheck
 
       - name: Deploy Portal via Wrangler Action
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: "identity/portal"
+          workingDirectory: "identity/portal/api"
           packageManager: "pnpm"
           command: deploy

@@ -1,36 +1,33 @@
 {
-  "name": "@tupynambalucas-dev/identity-portal",
+  "name": "@tupynambalucas-dev/identity-portal-web",
   "version": "1.0.0",
   "private": true,
-  "description": "Cloudflare Workers serverless portal hosting enterprise application identities, OAuth brand verification landing pages, and compliance policies for apps.tupynambalucas.dev.",
-  "author": "Tupynambá Lucas Varela Rodrigues <tupynambalucas.dev>",
+  "description": "React 19 + Vite + FSD frontend SPA for the tupynambalucas.dev Identity Portal (apps.tupynambalucas.dev).",
+  "author": "Tupynamba Lucas Varela Rodrigues <tupynambalucas.dev>",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "clean": "rimraf dist tsconfig.tsbuildinfo",
-    "cf-typegen": "wrangler types",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b",
-    "test": "node --import tsx --test src/api/**/*.test.ts",
-    "deploy": "wrangler deploy"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@tupynambalucas-dev/identity-portal-core": "workspace:*",
     "clsx": "catalog:web-stack",
     "react": "catalog:web-stack",
     "react-dom": "catalog:web-stack"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "catalog:",
     "@tailwindcss/vite": "catalog:web-stack",
     "@types/node": "catalog:",
     "@types/react": "catalog:web-stack",
     "@types/react-dom": "catalog:web-stack",
     "@vitejs/plugin-react": "catalog:web-stack",
+    "rimraf": "catalog:",
     "tailwindcss": "catalog:web-stack",
     "typescript": "catalog:",
-    "vite": "catalog:web-stack",
-    "wrangler": "catalog:"
+    "vite": "catalog:web-stack"
   }
 }
