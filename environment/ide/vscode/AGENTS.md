@@ -1,8 +1,8 @@
 <context-hierarchy>
-  <parent src="../AGENTS.md" type="subdomain-rules" />
+  <parent src="../../../AGENTS.md" type="global-rules" />
   <parent src="../../AGENTS.md" type="bounded-context-rules" />
   <system-instruction>
-    AGENT: You are operating within the VS Code Domain Slice (foundation/environment/ide/vscode). Manage profiles, keybindings, and extension compatibility matrices.
+    AGENT: You are operating within the VS Code Domain Slice (foundation/environment/ide/vscode). If you have not read "../../../AGENTS.md" and "../../AGENTS.md" in this session, read them first before proceeding.
   </system-instruction>
 </context-hierarchy>
 

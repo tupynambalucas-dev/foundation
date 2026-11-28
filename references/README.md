@@ -61,4 +61,4 @@ Deep architectural context, design tradeoffs, and system mechanics:
 - All documents strictly adhere to GitHub Flavored Markdown (GFM) and the Zero-Emoji Invariant.
 - All intra-repository links must be relative and resolve to valid files on disk. Absolute `file:///` links are strictly forbidden.
 - Technical documentation is authored strictly in en-US.
-- Historical execution plans and audit reports are archived under [../.agents/plans/](../.agents/plans/distro-distribution-and-cli-architecture/README.md).
+- Historical execution plans and audit reports are archived under [../.agents/plans/](../.agents/plans/completed/distro-distribution-and-cli-architecture/README.md).

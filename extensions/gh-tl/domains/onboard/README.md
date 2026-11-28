@@ -67,4 +67,4 @@ tl verify
 - [gh-tl Extension Root (`../../README.md`)](../../README.md)
 - [Distro Lifecycle Domain (`../distro/README.md`)](../distro/README.md)
 - [Host Readiness Domain (`../host/README.md`)](../host/README.md)
-- [Workstation Monorepo Root (`../../../../../../README.md`)](../../../../../../README.md)
+- [Workstation Monorepo Root (`../../../../README.md`)](../../../../README.md)

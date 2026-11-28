@@ -20,8 +20,8 @@ This document serves as the Layer-2 Bounded Context context router for `foundati
 | Structural Unit | Context Router | Documentation | Responsibility |
 | :--- | :--- | :--- | :--- |
 | **Standards (`standards/`)** | - | [`standards/formatting-rules.md`](./standards/formatting-rules.md) | Universal whitespace and encoding rules. |
-| **IDE Governance (`ide/`)** | [`ide/AGENTS.md`](./ide/AGENTS.md) | [`ide/README.md`](./ide/README.md) | Subdomain managing editor configurations. |
-| **VS Code (`ide/vscode/`)** | [`ide/vscode/AGENTS.md`](./ide/vscode/AGENTS.md) | [`ide/vscode/README.md`](./ide/vscode/README.md) | Official enterprise VS Code profiles and matrices. |
+| **IDE Profiles (`ide/`)** | Governed by this router | [`ide/README.md`](./ide/README.md) | Grouping folder for VS Code, JetBrains, and Neovim profiles. |
+| **VS Code (`ide/vscode/`)** | [`ide/vscode/AGENTS.md`](./ide/vscode/AGENTS.md) | [`ide/vscode/README.md`](./ide/vscode/README.md) | Official enterprise VS Code profiles and matrices (Layer 3). |
 
 ## Governance Invariants
 

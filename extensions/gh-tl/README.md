@@ -60,4 +60,4 @@ tools/github/extensions/gh-tl/
 
 - [GitHub CLI Workspace Root (`../../README.md`)](../../README.md)
 - [Tools Subsystem Root (`../../../README.md`)](../../../README.md)
-- [Workstation Monorepo Root (`../../../../README.md`)](../../../../README.md)
+- [Workstation Monorepo Root (`../../README.md`)](../../README.md)

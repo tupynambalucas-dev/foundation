@@ -65,6 +65,6 @@ mv output/tupynambalucas-dev-cluster.tar.gz output/tupynambalucas-dev-cluster.ws
 - [Workstation Monorepo Root (`../README.md`)](../README.md)
 - [Base Developer Distribution (`./base/README.md`)](./base/README.md)
 - [Cluster Kubernetes Distribution (`./cluster/README.md`)](./cluster/README.md)
-- [Developer Toolchain & CLI (`../tools/README.md`)](../tools/README.md)
+- [Developer Toolchain & CLI (`../extensions/README.md`)](../extensions/README.md)
 - [Host Virtualization Governance (`../virtualization/README.md`)](../virtualization/README.md)
 - [Documentation Hub (`../references/README.md`)](../references/README.md)
