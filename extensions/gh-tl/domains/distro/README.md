@@ -8,7 +8,7 @@ Layer-3 CLI domain providing discovery, host inspection, and cryptographic verif
 
 ### 1. `tl distro list` (`gh tl distro list`)
 
-Queries [`distributions/catalog/DistributionInfo.json`](../../../../../../distributions/catalog/DistributionInfo.json) (locally when inside the repository or remotely from GitHub `main`) and displays all available corporate WSL2 distributions alongside their local installation state.
+Queries [`distributions/catalog/DistributionInfo.json`](../../../../distributions/catalog/DistributionInfo.json) (locally when inside the repository or remotely from GitHub `main`) and displays all available corporate WSL2 distributions alongside their local installation state.
 
 ```bash
 tl distro list
@@ -43,4 +43,4 @@ tl distro install tupynambalucas-dev --from-file output/tupynambalucas-dev.wsl -
 - [gh-tl Extension Root (`../../README.md`)](../../README.md)
 - [Onboarding Domain (`../onboard/README.md`)](../onboard/README.md)
 - [Host Readiness Domain (`../host/README.md`)](../host/README.md)
-- [WSL2 Distributions Subsystem (`../../../../../../distributions/README.md`)](../../../../../../distributions/README.md)
+- [WSL2 Distributions Subsystem (`../../../../distributions/README.md`)](../../../../distributions/README.md)
