@@ -2,7 +2,7 @@
   "name": "@tupynambalucas-dev/identity-portal-core",
   "version": "1.0.0",
   "private": true,
-  "description": "Shared TypeScript domain contracts, live app status schemas, and canonical route constants for the tupynambalucas.dev Identity Portal.",
+  "description": "Shared TypeScript domain contracts, auto-generated app registry, live app status schemas, and canonical route constants for the tupynambalucas.dev Identity Portal.",
   "author": "Tupynamba Lucas Varela Rodrigues <tupynambalucas.dev>",
   "license": "Apache-2.0",
   "type": "module",
@@ -15,12 +15,17 @@
     }
   },
   "scripts": {
-    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "clean": "rimraf dist tsconfig.tsbuildinfo src/registry.generated.ts",
+    "generate": "tsx ./scripts/generate-registry.ts",
+    "prebuild": "pnpm run generate",
     "build": "tsc -b",
-    "typecheck": "tsc --noEmit"
+    "pretypecheck": "pnpm run generate",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit"
   },
   "devDependencies": {
+    "@types/node": "catalog:",
     "rimraf": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:"
   }
 }

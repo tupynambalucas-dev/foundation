@@ -28,6 +28,7 @@ go.work
 node_modules/
 .turbo/
 *.tsbuildinfo
+*.generated.ts
 
 # OS and Editor files
 .DS_Store

@@ -9,13 +9,8 @@ export const PORTAL_API_ROUTES = {
 } as const;
 
 export interface IGitHubAppTierSpec {
-  slug: 'org-manager' | 'automation' | 'guardian' | 'developer-tools';
+  slug: string;
   name: string;
+  secretPrefix: string;
+  infisicalPath: string;
 }
-
-export const GITHUB_APP_TIERS: readonly IGitHubAppTierSpec[] = [
-  { slug: 'org-manager', name: 'tupynambalucas-org-manager' },
-  { slug: 'automation', name: 'tupynambalucas-automation' },
-  { slug: 'guardian', name: 'tupynambalucas-guardian' },
-  { slug: 'developer-tools', name: 'tupynambalucas-developer-tools' },
-] as const;

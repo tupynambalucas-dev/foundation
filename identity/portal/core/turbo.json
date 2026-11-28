@@ -1,0 +1,19 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "generate": {
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/identity/apps/**/*.json"],
+      "outputs": ["src/registry.generated.ts"]
+    },
+    "build": {
+      "dependsOn": ["^build", "generate"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/identity/apps/**/*.json"],
+      "outputs": ["dist/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck", "generate"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/identity/apps/**/*.json"]
+    }
+  }
+}
