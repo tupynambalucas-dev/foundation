@@ -35,8 +35,10 @@ jobs:
       - name: Checkout Foundation Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Setup Node.js & pnpm
-        uses: ./.github/actions/setup-pnpm-env
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad7ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: "22"
 
       - name: Validate Declarative GitHub App Manifests (JSON Schema & Zero-Emoji)
         run: |
@@ -44,7 +46,12 @@ jobs:
             const fs = require("node:fs");
             const path = require("node:path");
             const base = path.resolve("identity/apps/github");
-            const tiers = ["org-manager", "automation", "guardian", "developer-tools"];
+            const tiers = fs
+              .readdirSync(base, { withFileTypes: true })
+              .filter((e) => e.isDirectory() && fs.existsSync(path.join(base, e.name, "manifest.json")))
+              .map((e) => e.name)
+              .sort();
+            if (tiers.length === 0) throw new Error("No GitHub App manifests discovered");
             const emojiRe = /[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]/u;
             for (const tier of tiers) {
               const p = path.join(base, tier, "manifest.json");
