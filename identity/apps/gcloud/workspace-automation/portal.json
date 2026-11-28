@@ -1,9 +1,0 @@
-{
-  "order": 6,
-  "provider": "workspace",
-  "tier": "Service Account",
-  "displayName": "Google Workspace & AppSheet Automation",
-  "summary": "Integração de planilhas de alta performance no Google Sheets servindo como bancos relacionais de 1NF para o Google AppSheet.",
-  "clientId": "workspace-appsheet-sa@tupynambalucas-dev.iam.gserviceaccount.com",
-  "landingUrl": "/workspace"
-}

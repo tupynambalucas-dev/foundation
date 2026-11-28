@@ -1,8 +1,0 @@
-{
-  "order": 4,
-  "tier": "Tier 3",
-  "summary": "Automação local de desenvolvimento, extensões CLI (gh tl), agentes autônomos (Antigravity) e sincronização de branches de trabalho.",
-  "secretPrefix": "DEVELOPER_TOOLS",
-  "infisicalPath": "/workstation",
-  "fallbackAppId": "5650238"
-}

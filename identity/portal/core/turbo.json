@@ -3,17 +3,17 @@
   "extends": ["//"],
   "tasks": {
     "generate": {
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/identity/apps/**/*.json"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/identity/apps/**/*.json", "$TURBO_ROOT$/identity/apps/**/description.md"],
       "outputs": ["src/registry.generated.ts"]
     },
     "build": {
       "dependsOn": ["^build", "generate"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/identity/apps/**/*.json"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/identity/apps/**/*.json", "$TURBO_ROOT$/identity/apps/**/description.md"],
       "outputs": ["dist/**"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck", "generate"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/identity/apps/**/*.json"]
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/identity/apps/**/*.json", "$TURBO_ROOT$/identity/apps/**/description.md"]
     }
   }
 }

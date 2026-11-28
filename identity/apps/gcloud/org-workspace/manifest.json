@@ -1,0 +1,91 @@
+{
+  "provider": "gcloud",
+  "scope": "org",
+  "gcloud": {
+    "app_name": "tupynambalucas-org-workspace",
+    "client_type": "hybrid",
+    "project_id": "tupynambalucas-dev-core",
+    "support_email": "tupynambalucas@gmail.com",
+    "enabled_apis": [
+      "drive.googleapis.com",
+      "sheets.googleapis.com",
+      "docs.googleapis.com"
+    ],
+    "identities": {
+      "oauth_desktop": {
+        "name": "Rclone & Local CLI Desktop Client",
+        "client_id": "614272183592-tupynambalucas.apps.googleusercontent.com",
+        "redirect_uris": [
+          "http://localhost:53682/",
+          "http://127.0.0.1:53682/"
+        ]
+      },
+      "service_account": {
+        "account_id": "org-workspace",
+        "email": "org-workspace@tupynambalucas-dev-core.iam.gserviceaccount.com",
+        "consumers": [
+          "agent-mesh/gwork",
+          "agent-mesh/appsheet"
+        ]
+      }
+    },
+    "branding": {
+      "homepage_url": "https://apps.tupynambalucas.dev/apps/org-workspace",
+      "privacy_policy_url": "https://apps.tupynambalucas.dev/privacy",
+      "terms_of_service_url": "https://apps.tupynambalucas.dev/terms",
+      "authorized_domains": [
+        "tupynambalucas.dev"
+      ]
+    },
+    "scopes": [
+      {
+        "scope": "https://www.googleapis.com/auth/drive",
+        "description": "Full access to Google Drive files for virtual disk mounting and bidirectional syncing via Rclone.",
+        "required": true
+      },
+      {
+        "scope": "https://www.googleapis.com/auth/drive.file",
+        "description": "Management of organizational folders and files created or opened by Workspace automations.",
+        "required": true
+      },
+      {
+        "scope": "https://www.googleapis.com/auth/spreadsheets",
+        "description": "Read and write access to Google Sheets for 1NF relational AppSheet backend synthesis.",
+        "required": true
+      },
+      {
+        "scope": "https://www.googleapis.com/auth/documents",
+        "description": "Read and write access to Google Docs for architectural specification publication.",
+        "required": true
+      }
+    ]
+  },
+  "portal": {
+    "order": 5,
+    "displayProvider": "workspace",
+    "tier": "Service Account",
+    "displayName": "tupynambalucas-org-workspace",
+    "clientId": "614272183592-tupynambalucas.apps.googleusercontent.com",
+    "landingUrl": "/apps/org-workspace",
+    "page": {
+      "subtitle": "Google Cloud Workspace Platform (OAuth Desktop + Service Account)",
+      "identityType": "Hybrid Google Cloud Identity (tupynambalucas-dev-core)",
+      "highlights": [
+        {
+          "title": "Armazenamento Local Estrito (Rclone)",
+          "description": "As chaves de acesso e refresh tokens OAuth 2.0 residem unicamente no arquivo local rclone.conf da workstation, sem retencao em servidores remotos."
+        },
+        {
+          "title": "Automacao Workspace & AppSheet (1NF)",
+          "description": "Service Account dedicada aos plugins gwork e appsheet do agent-mesh para sintese de planilhas 1NF e documentos corporativos."
+        },
+        {
+          "title": "Limited Use Compliance",
+          "description": "Nenhum dado obtido via APIs do Google e compartilhado com terceiros ou usado para treinamento de IA, cumprindo integralmente a Google API Services User Data Policy."
+        }
+      ],
+      "externalDocsUrl": "https://rclone.org/drive/",
+      "externalDocsLabel": "Documentacao Oficial Rclone Drive"
+    }
+  }
+}

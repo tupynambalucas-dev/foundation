@@ -1,8 +1,0 @@
-{
-  "order": 1,
-  "tier": "Tier 1",
-  "summary": "Gestão organizacional soberana, auditoria de segurança corporativa, RBAC, branch protection rulesets e sincronização de times.",
-  "secretPrefix": "ORG_MANAGER",
-  "infisicalPath": "/governance",
-  "fallbackAppId": "5648756"
-}

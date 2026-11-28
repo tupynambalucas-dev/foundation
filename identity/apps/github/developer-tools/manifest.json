@@ -1,19 +1,44 @@
 {
-  "name": "tupynambalucas-developer-tools",
-  "url": "https://apps.tupynambalucas.dev",
-  "description": "### Interactive Developer Tooling & Workstation Self-Service Identity\n\n`tupynambalucas-developer-tools` is the Tier-3 developer enablement identity for `tupynambalucas-dev`, providing secure, passwordless OAuth Device-Flow authentication for developer workstations, internal CLI extensions (`gh-tl`), IDE tools, and local engineering workflows without static access tokens.\n\n#### Core Responsibilities\n- **OAuth Device-Flow Integration**: Authenticates engineers via `https://github.com/login/device` with auto-expiring 8-hour User Access Tokens (UAT) and automatic refresh rotation.\n- **Zero Static Personal Access Tokens**: Eliminates high-risk classic and fine-grained PATs from developer workstations.\n- **Workstation Verification & Onboarding**: Powers `gh tl onboard` and `gh tl verify` to validate local Git configuration, SSH commit signing keys, and repository remotes.\n- **Interactive Developer Workflows**: Enables human-attributed Git branching, PR authoring, code review comments, and issue triage from terminal and IDE interfaces.\n\n#### Custody & Security Architecture\n- **Authentication**: Public OAuth Device-Flow client with zero server-side RSA private key (`.pem`) generated or distributed; CLI clients embed only the public `Client ID`.\n- **Intersection of Rights**: Operates strictly within the intersection of the App permissions and the individual developer's team RBAC (`Effective Rights = App Scopes ∩ Team RBAC`).\n- **Isolation & Custody**: Holds zero organization-level administrative scopes and cannot alter security rulesets, teams, or autonomous PR approvals; co-managed by `lead-architects` and `core-engineers` with instant per-workstation revocation.\n- **Webhooks**: Disabled (`Active: false`) for interactive user-to-server workflows.\n\n> [!NOTE]\n> Commits and pull request reviews created through this identity are attributed to the individual developer's verified human username with `programmatic_access_type: GitHub App user-to-server token`.",
-  "hook_attributes": {
-    "url": "https://apps.tupynambalucas.dev/webhooks/github",
-    "active": false
+  "provider": "github",
+  "scope": "dev",
+  "github": {
+    "name": "tupynambalucas-developer-tools",
+    "url": "https://apps.tupynambalucas.dev/apps/developer-tools",
+    "hook_attributes": {
+      "url": "https://apps.tupynambalucas.dev/webhooks/github",
+      "active": false
+    },
+    "redirect_url": "https://apps.tupynambalucas.dev/api/github/callback",
+    "public": false,
+    "default_permissions": {
+      "contents": "write",
+      "metadata": "read",
+      "pull_requests": "write",
+      "issues": "write",
+      "workflows": "write"
+    },
+    "default_events": []
   },
-  "redirect_url": "https://apps.tupynambalucas.dev/api/github/callback",
-  "public": false,
-  "default_permissions": {
-    "contents": "write",
-    "metadata": "read",
-    "pull_requests": "write",
-    "issues": "write",
-    "workflows": "write"
-  },
-  "default_events": []
+  "portal": {
+    "order": 4,
+    "tier": "Tier 3",
+    "secretPrefix": "DEVELOPER_TOOLS",
+    "infisicalPath": "/workstation",
+    "fallbackAppId": "5650238",
+    "botUserId": 353560338,
+    "page": {
+      "subtitle": "Interactive Developer Tooling & Workstation Self-Service Identity",
+      "identityType": "GitHub App (Tier 3 — OAuth Device-Flow)",
+      "highlights": [
+        {
+          "title": "Zero Static PATs",
+          "description": "Autenticacao via Device-Flow com User Access Tokens (UAT) de 8 horas para extensoes CLI (gh-tl) e ferramentas de workstation."
+        },
+        {
+          "title": "Intersection of Rights",
+          "description": "Opera estritamente na interseccao entre os escopos do App e o RBAC individual do desenvolvedor."
+        }
+      ]
+    }
+  }
 }

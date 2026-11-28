@@ -1,12 +1,14 @@
+import {
+  AUTHORIZED_BOT_LOGINS as CORE_AUTHORIZED_BOT_LOGINS,
+  AUTHORIZED_BOT_USER_IDS as CORE_AUTHORIZED_BOT_USER_IDS,
+  AUTHORIZED_HUMAN_USER_IDS as CORE_AUTHORIZED_HUMAN_USER_IDS,
+} from '@tupynambalucas-dev/identity-portal-core';
 import type { GateOutcome } from '../types';
 
 export const AUTHORIZED_HUMAN_LOGINS = new Set(['tupynambalucas', 'tupynambalucas-dev']);
-
-export const AUTHORIZED_BOT_LOGINS = new Set([
-  'tupynambalucas-automation[bot]',
-  'tupynambalucas-ci-bot[bot]',
-  'dependabot[bot]',
-]);
+export const AUTHORIZED_HUMAN_USER_IDS = new Set<number>(CORE_AUTHORIZED_HUMAN_USER_IDS);
+export const AUTHORIZED_BOT_USER_IDS = new Set<number>(CORE_AUTHORIZED_BOT_USER_IDS);
+export const AUTHORIZED_BOT_LOGINS = new Set<string>(CORE_AUTHORIZED_BOT_LOGINS);
 
 const CONVENTIONAL_COMMIT_REGEX =
   /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: .{1,100}$/;
@@ -33,14 +35,30 @@ export function hasEmoji(text: string): boolean {
   return EMOJI_REGEX.test(text);
 }
 
-export function isBotAuthor(login: string): boolean {
+export function isBotAuthor(login: string, authorType?: string, authorId?: number): boolean {
+  if (authorType === 'Bot') {
+    return true;
+  }
+  if (typeof authorId === 'number' && AUTHORIZED_BOT_USER_IDS.has(authorId)) {
+    return true;
+  }
   return login.endsWith('[bot]') || AUTHORIZED_BOT_LOGINS.has(login);
 }
 
-export function evaluateRbacGate(authorLogin: string): GateOutcome {
+export function evaluateRbacGate(authorLogin: string, authorId?: number): GateOutcome {
+  if (typeof authorId === 'number') {
+    if (AUTHORIZED_HUMAN_USER_IDS.has(authorId) || AUTHORIZED_BOT_USER_IDS.has(authorId)) {
+      return {
+        passed: true,
+        reason: `Authorized author: ${authorLogin} (immutable ID ${authorId})`,
+      };
+    }
+  }
+
   if (AUTHORIZED_HUMAN_LOGINS.has(authorLogin) || AUTHORIZED_BOT_LOGINS.has(authorLogin)) {
     return { passed: true, reason: `Authorized author: ${authorLogin}` };
   }
+
   return {
     passed: false,
     reason: `Author '${authorLogin}' is not in the automated approval allowlist (human review required).`,
@@ -75,8 +93,13 @@ export function evaluateSemanticGate(
   return { passed: true, reason: 'Conventional Commits and Zero-Emoji invariants satisfied.' };
 }
 
-export function evaluateBotFileConfinement(authorLogin: string, changedFiles: string[]): GateOutcome {
-  if (!isBotAuthor(authorLogin)) {
+export function evaluateBotFileConfinement(
+  authorLogin: string,
+  changedFiles: string[],
+  authorType?: string,
+  authorId?: number
+): GateOutcome {
+  if (!isBotAuthor(authorLogin, authorType, authorId)) {
     return { passed: true, reason: 'Human author: bot file confinement not applicable.' };
   }
   if (changedFiles.length === 0) {

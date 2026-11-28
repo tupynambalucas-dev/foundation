@@ -1,8 +1,0 @@
-{
-  "order": 2,
-  "tier": "Tier 2",
-  "summary": "Plano de Execução e Entrega de CI/CD, execução de testes herméticos, empacotamento de containers e abertura automatizada de PRs de release.",
-  "secretPrefix": "AUTOMATION",
-  "infisicalPath": "/delivery",
-  "fallbackAppId": "5650100"
-}

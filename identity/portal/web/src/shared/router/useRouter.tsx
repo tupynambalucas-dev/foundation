@@ -10,8 +10,13 @@ const RouterContext = createContext<RouterContextType>({
   navigate: () => {},
 });
 
-export const RouterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [path, setPath] = useState(typeof window !== 'undefined' ? window.location.pathname : '/');
+export const RouterProvider: React.FC<{ initialPath?: string; children: React.ReactNode }> = ({
+  initialPath,
+  children,
+}) => {
+  const [path, setPath] = useState(
+    initialPath ?? (typeof window !== 'undefined' ? window.location.pathname : '/')
+  );
 
   useEffect(() => {
     const handlePopState = () => setPath(window.location.pathname);

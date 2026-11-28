@@ -1,9 +1,0 @@
-{
-  "order": 5,
-  "provider": "gcloud",
-  "tier": "Desktop App",
-  "displayName": "Rclone Desktop Client (Windows & WSL)",
-  "summary": "Aplicativo Desktop cliente para montagem de unidades Google Drive via WinFsp e execução de rotinas automáticas de backup redundante.",
-  "clientId": "614272183592-tupynambalucas.apps.googleusercontent.com",
-  "landingUrl": "/rclone"
-}

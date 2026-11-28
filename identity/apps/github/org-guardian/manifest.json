@@ -1,0 +1,53 @@
+{
+  "provider": "github",
+  "scope": "org",
+  "github": {
+    "name": "tupynambalucas-org-guardian",
+    "url": "https://apps.tupynambalucas.dev/apps/org-guardian",
+    "hook_attributes": {
+      "url": "https://apps.tupynambalucas.dev/webhooks/github",
+      "active": true
+    },
+    "redirect_url": "https://apps.tupynambalucas.dev/api/github/callback",
+    "public": false,
+    "default_permissions": {
+      "checks": "read",
+      "contents": "write",
+      "issues": "write",
+      "metadata": "read",
+      "pull_requests": "write",
+      "security_events": "read",
+      "statuses": "read",
+      "vulnerability_alerts": "read"
+    },
+    "default_events": [
+      "pull_request",
+      "pull_request_review",
+      "check_suite",
+      "check_run"
+    ]
+  },
+  "portal": {
+    "order": 3,
+    "tier": "Tier 2",
+    "secretPrefix": "GUARDIAN",
+    "infisicalPath": "/protection",
+    "fallbackAppId": "5959745",
+    "botUserId": 362146655,
+    "isPrApprover": true,
+    "page": {
+      "subtitle": "Autonomous PR Quality Gate & Security Compliance Guardian",
+      "identityType": "GitHub App (Tier 2B — Protection Plane)",
+      "highlights": [
+        {
+          "title": "7-Gate Autonomous Verification",
+          "description": "Avalia CI/CodeQL, assinaturas SSH, RBAC por Bot User ID imutavel, Secret Scanning, Conventional Commits e confinamento de arquivos."
+        },
+        {
+          "title": "Separation of Duties (SoD)",
+          "description": "Aprova PRs formalmente via Cloudflare Workflows sem privilegios de administracao da org e isolado do org-automation."
+        }
+      ]
+    }
+  }
+}

@@ -12,11 +12,11 @@ This document serves as the Layer-2 context router for `foundation/identity/`, g
 ## Architectural Boundaries & Ubiquitous Language
 
 - **4-Tier Machine Identity Matrix (`apps/github/`)**:
-  - Tier-1 (`org-manager`): Executive organization governance (`tupynambalucas-org-manager`).
-  - Tier-2A (`automation`): CI/CD delivery, releases, and package publishing (`tupynambalucas-automation`).
-  - Tier-2B (`guardian`): Independent 7-Gate PR verification and security auditing (`tupynambalucas-guardian`).
-  - Tier-3 (`developer-tools`): Public OAuth Device-Flow workstation CLI (`tupynambalucas-developer-tools`).
-- **Canonical Markdown App Descriptions**: Every `apps/github/*/manifest.json` description MUST follow the 5-part GFM structure (`### <Title>`, Tier intro, `#### Core Responsibilities`, `#### Custody & Security Architecture`, `> [!NOTE]`) with zero emojis.
+  - Tier-1 (`org-manager`): Executive organization governance (`tupynambalucas-org-manager`, Bot User ID `353527435`).
+  - Tier-2A (`org-automation`): CI/CD delivery, releases, and package publishing (`tupynambalucas-org-automation`, Bot User ID `353557933`).
+  - Tier-2B (`org-guardian`): Independent 7-Gate PR verification and security auditing (`tupynambalucas-org-guardian`, Bot User ID `362146655`).
+  - Tier-3 (`developer-tools`): Public OAuth Device-Flow workstation CLI (`tupynambalucas-developer-tools`, Bot User ID `353560338`).
+- **3-File App Anatomy (`apps/{github,gcloud}/<slug>/`)**: Every App declares `manifest.json` (Zod `UnifiedAppManifestSchema`), `description.md` (5-part GFM structure + `<!-- portal-summary: ... -->`), and `README.md` (Archetype D technical spec) with zero emojis.
 - **Modular Edge Portal (`portal/{core,web,api}/`)**: Strict DDD/FSD/SOLID separation between shared contracts (`core/`), React SPA (`web/`), and Cloudflare Worker/Workflows runtime (`api/`). `portal/` is an intermediate grouping folder and MUST NOT declare an `AGENTS.md`.
 - **Token Broker STS (`broker/`)**: Go daemon vending 60-minute down-scoped Installation Access Tokens with strict `No-Privilege-Escalation` boundaries.
 
@@ -28,8 +28,7 @@ This document serves as the Layer-2 context router for `foundation/identity/`, g
 | **3** | **Portal Core (`portal/core/`)** | [`portal/core/AGENTS.md`](./portal/core/AGENTS.md) | [`portal/core/README.md`](./portal/core/README.md) | Shared TypeScript contracts (`IAppRecord`, `IAppLiveStatus`, `PORTAL_API_ROUTES`). |
 | **3** | **Portal Web (`portal/web/`)** | [`portal/web/AGENTS.md`](./portal/web/AGENTS.md) | [`portal/web/README.md`](./portal/web/README.md) | React 19 + Vite + FSD frontend SPA (`apps.tupynambalucas.dev`). |
 | **3** | **Portal API (`portal/api/`)** | [`portal/api/AGENTS.md`](./portal/api/AGENTS.md) | [`portal/api/README.md`](./portal/api/README.md) | Cloudflare Worker, `PrGateEvaluatorWorkflow`, Zero Trust Manifest Flow, and `/api/apps/status`. |
-| **Asset** | **App Manifests (`apps/`)** | Governed by this router | [`README.md`](./README.md) | Declarative GitHub App (`apps/github/*`) and Google Cloud (`apps/gcloud/*`) manifests. |
-| **Asset** | **Compliance (`compliance/`)** | Governed by this router | [`compliance/README.md`](./compliance/README.md) | Privacy Policy and Terms of Service for Google OAuth and GitHub App verification. |
+| **Asset** | **App Manifests (`apps/`)** | Governed by this router | [`README.md`](./README.md) | Declarative GitHub App (`apps/github/*`) and Google Cloud (`apps/gcloud/org-workspace`) manifests + `description.md`. |
 
 ## Operational & Security Guardrails
 

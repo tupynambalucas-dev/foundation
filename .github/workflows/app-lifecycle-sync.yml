@@ -55,16 +55,22 @@ jobs:
             const emojiRe = /[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]/u;
             for (const tier of tiers) {
               const p = path.join(base, tier, "manifest.json");
+              const descPath = path.join(base, tier, "description.md");
+              if (!fs.existsSync(descPath)) {
+                throw new Error(`Missing required description.md in ${path.join(base, tier)}`);
+              }
               const raw = fs.readFileSync(p, "utf8");
-              if (emojiRe.test(raw)) throw new Error(`Emoji detected in ${p}`);
+              const descRaw = fs.readFileSync(descPath, "utf8");
+              if (emojiRe.test(raw) || emojiRe.test(descRaw)) throw new Error(`Emoji detected in ${tier}`);
               const parsed = JSON.parse(raw);
-              if (!parsed.name || !parsed.url || !parsed.default_permissions) {
+              const gh = parsed.provider === "github" && parsed.github ? parsed.github : parsed;
+              if (!gh.name || !gh.url || !gh.default_permissions) {
                 throw new Error(`Missing required manifest fields in ${p}`);
               }
-              if (parsed.name.endsWith("-bot")) {
-                throw new Error(`Forbidden -bot suffix in ${p}: ${parsed.name}`);
+              if (gh.name.endsWith("-bot")) {
+                throw new Error(`Forbidden -bot suffix in ${p}: ${gh.name}`);
               }
-              console.log(`[OK] ${tier}: ${parsed.name} (${Object.keys(parsed.default_permissions).length} permissions)`);
+              console.log(`[OK] ${tier}: ${gh.name} (${Object.keys(gh.default_permissions).length} permissions)`);
             }
           '
 

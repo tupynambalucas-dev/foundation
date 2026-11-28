@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
+  AppsStatusResponseSchema,
   type IAppRecord,
-  type IAppsStatusResponse,
   PORTAL_API_ROUTES,
 } from '@tupynambalucas-dev/identity-portal-core';
 
@@ -21,8 +21,9 @@ export function useLiveAppStatus(initialApps: IAppRecord[]): IAppRecord[] {
           headers: { Accept: 'application/json' },
         });
         if (!res.ok) return;
-        const payload = (await res.json()) as IAppsStatusResponse;
-        if (!active || !Array.isArray(payload.apps)) return;
+        const parsed = AppsStatusResponseSchema.safeParse(await res.json());
+        if (!active || !parsed.success) return;
+        const payload = parsed.data;
 
         const bySlug = new Map(payload.apps.map((item) => [item.slug, item]));
 
