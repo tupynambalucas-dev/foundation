@@ -294,6 +294,7 @@ describe('HTTP Handlers (Webhooks & Manifest Callback)', () => {
 
     const res = await handleAppsStatus(
       new Request('https://apps.tupynambalucas.dev/api/apps/status'),
+      undefined,
       mockFetch
     );
     assert.equal(res.status, 200);
