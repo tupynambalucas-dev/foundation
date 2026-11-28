@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "identity/portal/**"
-      - "identity/apps/github/**"
+      - "identity/apps/**"
       - ".github/workflows/deploy-portal.yml"
   workflow_dispatch:
 

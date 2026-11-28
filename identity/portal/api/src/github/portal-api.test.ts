@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import {
+  GITHUB_APP_TIERS,
+  GITHUB_MANIFESTS_BY_SLUG,
+  PORTAL_APPS_CATALOG,
+} from '@tupynambalucas-dev/identity-portal-core';
 import type { PortalEnv, PrGateParams } from '../types';
 import { handleAppsStatus } from './apps-status';
 import { handleGitHubManifestCallback } from './callback';
@@ -306,5 +311,32 @@ describe('HTTP Handlers (Webhooks & Manifest Callback)', () => {
     assert.equal(guardian?.appId, '5959745');
     assert.equal(automation?.provisioned, false);
     assert.equal(automation?.appId, null);
+  });
+
+  it('auto-discovers all GitHub and Google apps with accurate manifest scopes and vault mappings', () => {
+    assert.ok(GITHUB_APP_TIERS.length >= 4);
+    assert.equal(Object.keys(GITHUB_MANIFESTS_BY_SLUG).length, GITHUB_APP_TIERS.length);
+
+    const guardianTier = GITHUB_APP_TIERS.find((t) => t.slug === 'guardian');
+    assert.equal(guardianTier?.name, 'tupynambalucas-guardian');
+    assert.equal(guardianTier?.secretPrefix, 'GUARDIAN');
+    assert.equal(guardianTier?.infisicalPath, '/protection');
+
+    const guardianCatalog = PORTAL_APPS_CATALOG.find((a) => a.slug === 'guardian');
+    assert.ok(guardianCatalog?.scopes.includes('contents:write'));
+    assert.ok(!guardianCatalog?.scopes.includes('contents:read'));
+
+    const gcloudApps = PORTAL_APPS_CATALOG.filter((a) => a.provider !== 'github');
+    assert.ok(gcloudApps.length >= 2);
+    assert.ok(gcloudApps.some((a) => a.slug === 'drive-rclone'));
+    assert.ok(gcloudApps.some((a) => a.slug === 'workspace-automation'));
+
+    for (const manifest of Object.values(GITHUB_MANIFESTS_BY_SLUG)) {
+      const perms = (manifest.default_permissions || {}) as Record<string, string>;
+      const events = (manifest.default_events || []) as string[];
+      assert.equal('team_discussions' in perms, false);
+      assert.equal(events.includes('installation'), false);
+      assert.equal(events.includes('installation_repositories'), false);
+    }
   });
 });

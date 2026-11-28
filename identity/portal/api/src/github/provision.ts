@@ -1,19 +1,10 @@
-import automationManifest from '../../../../apps/github/automation/manifest.json';
-import developerToolsManifest from '../../../../apps/github/developer-tools/manifest.json';
-import guardianManifest from '../../../../apps/github/guardian/manifest.json';
-import orgManagerManifest from '../../../../apps/github/org-manager/manifest.json';
+import {
+  GITHUB_MANIFESTS_BY_SLUG,
+  GITHUB_ORG_SLUG,
+} from '@tupynambalucas-dev/identity-portal-core';
 import type { PortalEnv } from '../types';
 import { verifyCloudflareAccessJwt } from './access';
 import { signPortalState } from './signature';
-
-const GITHUB_ORG = 'tupynambalucas-dev';
-
-const MANIFESTS_BY_TIER: Record<string, Record<string, unknown>> = {
-  'org-manager': orgManagerManifest,
-  automation: automationManifest,
-  guardian: guardianManifest,
-  'developer-tools': developerToolsManifest,
-};
 
 function escapeHtmlAttr(value: string): string {
   return value
@@ -49,12 +40,12 @@ export async function handleGitHubManifestProvision(
 
   const url = new URL(request.url);
   const tier = (url.searchParams.get('tier') || '').trim();
-  const manifest = MANIFESTS_BY_TIER[tier];
+  const manifest = GITHUB_MANIFESTS_BY_SLUG[tier];
 
   if (!manifest) {
     return Response.json(
       {
-        error: `Unsupported or missing app tier '${tier}'. Allowed: ${Object.keys(MANIFESTS_BY_TIER).join(', ')}.`,
+        error: `Unsupported or missing app tier '${tier}'. Allowed: ${Object.keys(GITHUB_MANIFESTS_BY_SLUG).join(', ')}.`,
       },
       { status: 400 }
     );
@@ -65,7 +56,7 @@ export async function handleGitHubManifestProvision(
   }
 
   const stateToken = await signPortalState(tier, env.PORTAL_STATE_SECRET);
-  const targetUrl = `https://github.com/organizations/${GITHUB_ORG}/settings/apps/new?state=${encodeURIComponent(stateToken)}`;
+  const targetUrl = `https://github.com/organizations/${GITHUB_ORG_SLUG}/settings/apps/new?state=${encodeURIComponent(stateToken)}`;
   const manifestJson = escapeHtmlAttr(JSON.stringify(manifest));
   const appName = escapeHtmlAttr(String(manifest.name || tier));
 
@@ -84,7 +75,7 @@ export async function handleGitHubManifestProvision(
 <body>
   <div class="card">
     <h2>GitHub App Manifest Flow</h2>
-    <p>Redirecting to GitHub to provision <strong>${appName}</strong> in organization <code>${GITHUB_ORG}</code>.</p>
+    <p>Redirecting to GitHub to provision <strong>${appName}</strong> in organization <code>${GITHUB_ORG_SLUG}</code>.</p>
     <form id="manifest-form" method="post" action="${escapeHtmlAttr(targetUrl)}">
       <input type="hidden" name="manifest" value="${manifestJson}" />
       <button type="submit">Continue to GitHub</button>

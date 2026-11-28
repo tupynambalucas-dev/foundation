@@ -37,3 +37,16 @@ export interface IAppsStatusResponse {
   checkedAt: string;
   apps: IAppLiveStatus[];
 }
+
+export interface IPortalAppMetadata {
+  order?: number;
+  tier?: AppTier;
+  provider?: ProviderType;
+  displayName?: string;
+  summary?: string;
+  secretPrefix?: string;
+  infisicalPath?: string;
+  fallbackAppId?: string;
+  clientId?: string;
+  landingUrl?: string;
+}

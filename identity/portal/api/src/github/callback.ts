@@ -1,3 +1,7 @@
+import {
+  GITHUB_APP_TIERS,
+  GITHUB_ORG_SLUG,
+} from '@tupynambalucas-dev/identity-portal-core';
 import type { PortalEnv } from '../types';
 import { upsertInfisicalSecrets } from '../infisical/client';
 import { verifyCloudflareAccessJwt } from './access';
@@ -11,13 +15,6 @@ interface ManifestConversionResponse {
   webhook_secret?: string;
   pem: string;
 }
-
-const TIER_SECRET_PATHS: Record<string, { prefix: string; path: string }> = {
-  'org-manager': { prefix: 'ORG_MANAGER', path: '/governance' },
-  automation: { prefix: 'AUTOMATION', path: '/delivery' },
-  guardian: { prefix: 'GUARDIAN', path: '/protection' },
-  'developer-tools': { prefix: 'DEVELOPER_TOOLS', path: '/workstation' },
-};
 
 function pemToBase64(pem: string): string {
   const bytes = new TextEncoder().encode(pem);
@@ -70,7 +67,7 @@ export async function handleGitHubManifestCallback(
     return Response.json({ error: 'Invalid or expired CSRF state token.' }, { status: 401 });
   }
 
-  const tierSpec = TIER_SECRET_PATHS[statePayload.tier];
+  const tierSpec = GITHUB_APP_TIERS.find((item) => item.slug === statePayload.tier);
   if (!tierSpec) {
     return Response.json({ error: `Unsupported app tier: ${statePayload.tier}` }, { status: 400 });
   }
@@ -98,12 +95,12 @@ export async function handleGitHubManifestCallback(
 
   if (env.INFISICAL_CLIENT_ID && env.INFISICAL_CLIENT_SECRET && env.INFISICAL_PROJECT_ID) {
     const secretsToStore: Record<string, string> = {
-      [`${tierSpec.prefix}_APP_ID`]: String(appData.id),
-      [`${tierSpec.prefix}_APP_CLIENT_ID`]: appData.client_id,
-      [`${tierSpec.prefix}_APP_PRIVATE_KEY_BASE64`]: pemToBase64(appData.pem),
+      [`${tierSpec.secretPrefix}_APP_ID`]: String(appData.id),
+      [`${tierSpec.secretPrefix}_APP_CLIENT_ID`]: appData.client_id,
+      [`${tierSpec.secretPrefix}_APP_PRIVATE_KEY_BASE64`]: pemToBase64(appData.pem),
     };
     if (appData.webhook_secret) {
-      secretsToStore[`${tierSpec.prefix}_APP_WEBHOOK_SECRET`] = appData.webhook_secret;
+      secretsToStore[`${tierSpec.secretPrefix}_APP_WEBHOOK_SECRET`] = appData.webhook_secret;
     }
 
     for (const environment of ['dev', 'prod']) {
@@ -113,12 +110,12 @@ export async function handleGitHubManifestCallback(
         clientSecret: env.INFISICAL_CLIENT_SECRET,
         projectId: env.INFISICAL_PROJECT_ID,
         environment,
-        secretPath: tierSpec.path,
+        secretPath: tierSpec.infisicalPath,
         secrets: secretsToStore,
       });
     }
   }
 
-  const installUrl = `https://github.com/organizations/tupynambalucas-dev/settings/apps/${encodeURIComponent(appData.slug)}/installations`;
+  const installUrl = `https://github.com/organizations/${GITHUB_ORG_SLUG}/settings/apps/${encodeURIComponent(appData.slug)}/installations`;
   return Response.redirect(installUrl, 302);
 }

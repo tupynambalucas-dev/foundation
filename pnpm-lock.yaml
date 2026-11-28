@@ -331,9 +331,15 @@ importers:
 
   identity/portal/core:
     devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
       rimraf:
         specifier: 'catalog:'
         version: 6.1.4
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.15
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
