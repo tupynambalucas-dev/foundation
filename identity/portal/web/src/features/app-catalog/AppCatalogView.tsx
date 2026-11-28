@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { APPS_DATA } from '@/domains/apps/apps.data';
+import { useLiveAppStatus } from '@/domains/apps/hooks/useLiveAppStatus';
 import { ProviderType } from '@/domains/apps/apps.types';
 import { AppCard } from './AppCard';
 import { SearchIcon, ShieldCheckIcon, TerminalIcon, KeyIcon } from '@/shared/ui/Icons';
@@ -8,8 +9,9 @@ import { Link } from '@/shared/router/useRouter';
 export const AppCatalogView: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState<'all' | ProviderType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const liveApps = useLiveAppStatus(APPS_DATA);
 
-  const filteredApps = APPS_DATA.filter((app) => {
+  const filteredApps = liveApps.filter((app) => {
     const matchesFilter = selectedFilter === 'all' || app.provider === selectedFilter;
     const matchesSearch =
       searchQuery === '' ||
