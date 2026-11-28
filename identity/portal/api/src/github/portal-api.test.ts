@@ -342,8 +342,9 @@ describe('HTTP Handlers (Webhooks & Manifest Callback)', () => {
     assert.equal(gcloudApps.length, 1);
     assert.equal(gcloudApps[0]?.slug, 'org-workspace');
     assert.equal(gcloudApps[0]?.landingUrl, '/apps/org-workspace');
-    assert.ok(gcloudApps[0]?.scopes.includes('https://www.googleapis.com/auth/drive'));
-    assert.ok(gcloudApps[0]?.scopes.includes('https://www.googleapis.com/auth/spreadsheets'));
+    const gcloudScopes = new Set(gcloudApps[0]?.scopes || []);
+    assert.ok(gcloudScopes.has('https://www.googleapis.com/auth/drive'));
+    assert.ok(gcloudScopes.has('https://www.googleapis.com/auth/spreadsheets'));
 
     for (const manifest of Object.values(GITHUB_MANIFESTS_BY_SLUG)) {
       assert.equal('portal' in manifest, false);
