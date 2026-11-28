@@ -10,7 +10,7 @@
   "public": false,
   "default_permissions": {
     "checks": "read",
-    "contents": "read",
+    "contents": "write",
     "issues": "write",
     "metadata": "read",
     "pull_requests": "write",
